@@ -138,6 +138,7 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
   const [uploading, setUploading] = useState(false);
   const [tenders, setTenders] = useState<UploadedTender[]>([]);
   const [scoringIds, setScoringIds] = useState<Set<string>>(new Set());
+  const [scoringErrors, setScoringErrors] = useState<Map<string, string>>(new Map());
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -178,9 +179,14 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
 
     // Score in the background — card shows spinner until done
     setScoringIds((prev) => new Set(prev).add(docId!));
+    setScoringErrors((prev) => { const m = new Map(prev); m.delete(docId!); return m; });
     scoreTender(docId)
       .then(() => refreshTenders())
-      .catch(console.error)
+      .catch((err) => {
+        const msg = err instanceof Error ? err.message : String(err);
+        setScoringErrors((prev) => new Map(prev).set(docId!, msg));
+        refreshTenders();
+      })
       .finally(() =>
         setScoringIds((prev) => {
           const next = new Set(prev);
@@ -292,6 +298,7 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
             <div className="space-y-3">
               {sortedTenders.map((tender) => {
                 const isScoring = scoringIds.has(tender.id);
+                const scoringError = scoringErrors.get(tender.id);
                 const score = tender.score;
                 const isExpanded = expandedId === tender.id;
 
@@ -308,10 +315,14 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
                         score ? "cursor-pointer hover:bg-accent/30" : "cursor-default"
                       }`}
                     >
-                      {/* Score rings or spinner */}
+                      {/* Score rings or spinner or error */}
                       {isScoring ? (
                         <div className="flex items-center justify-center shrink-0" style={{ width: 40, height: 40 }}>
                           <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+                        </div>
+                      ) : scoringError ? (
+                        <div className="p-2.5 rounded-lg bg-red-500/10 shrink-0">
+                          <AlertTriangle className="h-5 w-5 text-red-500" />
                         </div>
                       ) : score ? (
                         <div className="flex items-center gap-3 shrink-0">
@@ -334,6 +345,9 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
                           {isScoring && (
                             <span className="text-[10px] text-muted-foreground italic">Analysing…</span>
                           )}
+                          {scoringError && (
+                            <span className="text-[10px] text-red-500 italic">Scoring failed</span>
+                          )}
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                           <Clock className="h-3 w-3" />
@@ -343,6 +357,14 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
                               <span>·</span>
                               <span className={`font-medium ${getScoreColor(score.overall_score)}`}>
                                 {score.overall_score}% overall fit
+                              </span>
+                            </>
+                          )}
+                          {scoringError && (
+                            <>
+                              <span>·</span>
+                              <span className="text-red-500 truncate max-w-[200px]" title={scoringError}>
+                                {scoringError}
                               </span>
                             </>
                           )}

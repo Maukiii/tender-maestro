@@ -102,7 +102,7 @@ async def run_tender_extractor_agent(file_path: Path) -> dict:
 
     raw = await generate_text(
         messages=[{"role": "user", "content": user_msg}],
-        max_tokens=2048,
+        max_tokens=8192,
     )
 
     return _parse_json(raw, agent="tender_extraction_agent")

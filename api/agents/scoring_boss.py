@@ -90,12 +90,30 @@ async def run_scoring_boss(tender_data: dict[str, Any], kb_profile: dict[str, An
         RuntimeError: If the AI returns invalid JSON.
     """
     tender_text = json.dumps(tender_data, indent=2, ensure_ascii=False, default=str)
-    # Truncate KB to stay within the model's context window
-    kb_text = json.dumps(kb_profile, indent=2, ensure_ascii=False, default=str)[:8000]
+
+    # Build company profile from first document, keeping only scoring-relevant fields
+    company_docs = kb_profile.get("company_documents", [])
+    if company_docs:
+        doc = company_docs[0]
+        company_summary = json.dumps({
+            "basic_info": doc.get("basic_info", {}),
+            "services": doc.get("company_profile", {}).get("services", []),
+            "capabilities": doc.get("capabilities", {}).get("capabilities_list", []),
+            "certifications": doc.get("capabilities", {}).get("certifications", []),
+            "past_projects": doc.get("experience", {}).get("past_projects", []),
+        }, indent=2, ensure_ascii=False, default=str)[:4000]
+    else:
+        company_summary = "{}"
+
+    # Team CVs get their own budget — critical for STEP 3 (60 % of decision).
+    # 16 000 chars accommodates all 4 CVs; Claude's context window handles this easily.
+    team_cvs = kb_profile.get("team_cvs", [])
+    team_text = json.dumps(team_cvs, indent=2, ensure_ascii=False, default=str)[:16000]
 
     user_msg = (
         "TENDER DATA:\n" + tender_text + "\n\n"
-        "COMPANY KNOWLEDGE BASE:\n" + kb_text
+        "COMPANY PROFILE:\n" + company_summary + "\n\n"
+        "TEAM CVs:\n" + team_text
     )
 
     raw = await generate_text(
