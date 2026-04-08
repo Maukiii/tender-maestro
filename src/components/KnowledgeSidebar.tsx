@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Database, Plus, ChevronRight, FolderPlus } from "lucide-react";
 import type { ProposalSection } from "@/lib/proposalData";
+import { SECTION_TEMPLATES } from "@/lib/sectionTemplates";
 
 interface SectionSidebarProps {
   sections: ProposalSection[];
@@ -12,22 +13,18 @@ interface SectionSidebarProps {
 }
 
 const RECOMMENDATIONS: Record<string, { label: string; hint: string }[]> = {
-  staffing: [
+  team: [
     { label: "Sarah Mitchell", hint: "Project Director — 18 yrs" },
     { label: "Marcus Webb", hint: "DevOps Engineer — 6 yrs" },
     { label: "James Chen", hint: "Senior Developer — 9 yrs" },
   ],
-  technical: [
+  methodology: [
     { label: "CI/CD Pipeline", hint: "From past tender #31" },
     { label: "Data Migration Plan", hint: "Template available" },
   ],
   pricing: [
-    { label: "Maintenance Add-on", hint: "$45k/yr — common upsell" },
+    { label: "Maintenance Add-on", hint: "€45k/yr — common upsell" },
   ],
-  risk: [
-    { label: "Data Sovereignty", hint: "Relevant for gov tenders" },
-  ],
-  "exec-summary": [],
 };
 
 export function KnowledgeSidebar({
