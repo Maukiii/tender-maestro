@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { GripVertical, Pencil, Eye } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from "react-markdown";
@@ -9,9 +9,10 @@ interface IngestPhaseProps {
   sections: ProposalSection[];
   onUpdateBlock: (blockId: string, markdown: string) => void;
   onTextSelect: (text: string, blockTitle: string) => void;
+  onScrollContainerReady?: (el: HTMLElement) => void;
 }
 
-export function IngestPhase({ sections, onUpdateBlock, onTextSelect }: IngestPhaseProps) {
+export function IngestPhase({ sections, onUpdateBlock, onTextSelect, onScrollContainerReady }: IngestPhaseProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -26,9 +27,16 @@ export function IngestPhase({ sections, onUpdateBlock, onTextSelect }: IngestPha
     [onTextSelect]
   );
 
+  const scrollRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      if (el && onScrollContainerReady) onScrollContainerReady(el);
+    },
+    [onScrollContainerReady]
+  );
+
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      <div className="flex-1 overflow-y-auto px-8 py-6">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-8 py-6">
         <div className="w-full max-w-3xl mx-auto space-y-8">
           {sections.map((section) => {
             const Icon = section.icon;

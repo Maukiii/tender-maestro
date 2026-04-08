@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { KnowledgeSidebar } from "@/components/KnowledgeSidebar";
 import { AiChatPane } from "@/components/AiChatPane";
 import type { SelectionContext } from "@/components/AiChatPane";
@@ -14,6 +14,7 @@ const Index = () => {
   const [view, setView] = useState<View>("projects");
   const [sections, setSections] = useState<ProposalSection[]>(DEFAULT_SECTIONS);
   const [selection, setSelection] = useState<SelectionContext | null>(null);
+  const [scrollContainer, setScrollContainer] = useState<HTMLElement | null>(null);
 
   const handleUpdateBlock = useCallback((blockId: string, markdown: string) => {
     setSections((prev) =>
@@ -31,9 +32,10 @@ const Index = () => {
   }, []);
 
   const handleSidebarSelect = useCallback((sectionId: string) => {
-    const el = document.querySelector(`[data-section-id="${sectionId}"]`);
+    if (!scrollContainer) return;
+    const el = scrollContainer.querySelector(`[data-section-id="${sectionId}"]`);
     el?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, []);
+  }, [scrollContainer]);
 
   if (view === "projects") {
     return <ProjectSelection onSelect={() => setView("editor")} />;
@@ -45,6 +47,7 @@ const Index = () => {
         sections={sections}
         activeSectionId={sections[0].id}
         onSelect={handleSidebarSelect}
+        scrollContainer={scrollContainer}
       />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
@@ -67,6 +70,7 @@ const Index = () => {
           sections={sections}
           onUpdateBlock={handleUpdateBlock}
           onTextSelect={handleTextSelect}
+          onScrollContainerReady={setScrollContainer}
         />
       </main>
 
