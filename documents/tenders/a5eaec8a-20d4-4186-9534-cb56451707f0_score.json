@@ -1,0 +1,50 @@
+{
+  "decision": "BID",
+  "company_fit_score": 92,
+  "team_fit_score": 84,
+  "overall_score": 87,
+  "company_fit_reasoning": "Meridian Intelligence GmbH ist außergewöhnlich gut auf diese Ausschreibung ausgerichtet. (1) Technische Anforderungen (15/15): Die proprietäre WebMap-Pipeline deckt exakt die geforderte Methodik ab – evidenzbasierte Klassifikation über technische Signale (Job-Postings, Procurement Notices, Website-Content, Patente), EU27-Coverage mit 2-12M Seed-Kandidaten, NLP in 24 EU-Sprachen, JSON/CSV-Delivery mit Datendictionaries, REST-API, Supply-Chain-Mapping, Continuous Monitoring mit strukturierten Change-Logs und nachgewiesenem False-Positive-Rate <3%. Die BERT-Classifier und das Five-Stage-Pipeline-Modell entsprechen direkt den geforderten 'AI-driven organizational data collection'-Anforderungen. (2) Referenzen/Volumen (14/15): >40 abgeschlossene EU-Projekte, Kunden u.a. DG CNECT, JRC, ENISA, EBA, kumulativer Umsatz >4,2 Mio. € (2024). Das Projektportfolio umfasst direkte Vergleichsprojekte (ENISA Cybersecurity SME Mapping EU27, 14.200+ verifizierte Entitäten). Ein minimaler Abzug, da kein Einzelprojektreferenz in der Größenordnung von 3,2 Mio. € nachweisbar ist, obwohl das Gesamtvolumen die Anforderungen klar übersteigt. (3) Compliance (10/10): DSGVO-konforme Infrastruktur vorhanden. Keine spezifische Zertifizierung gefordert (required_certifications: []). ISO 9001 vorhanden. Keine Primärforschung/Vor-Ort-Audits erforderlich. Sprache EN vollständig abgedeckt.",
+  "ko_criterion_triggered": null,
+  "team_proposal": [
+    {
+      "role": "Project Manager / Project Director (EU-funded research experience, comparable scope)",
+      "member_name": "Dr. Anna Becker",
+      "total_score_percentage": 90,
+      "score_details": {
+        "hard_skills_reasoning": "Policy (5/5), Project Management (5/5), Client Communication (5/5). Alle drei Kernkompetenzen auf maximalem Niveau. Die Ausschreibung fordert explizit einen PM mit EU-funded research/consultancy experience of comparable scope – Dr. Becker verfügt über nachgewiesene Projektleitungserfahrung bei DG CNECT, JRC, ENISA und EBA. Hard Skills Score: 25/25.",
+        "experience_reasoning": "Referenz-Budget von 1,6 Mio. € ist das höchste im Team-Pool. Das Projekt-Volumen von 3,2 Mio. € über 36 Monate übersteigt zwar ihr Einzelreferenz-Budget, jedoch ist dieses das Maximum im verfügbaren Pool und liegt im akzeptablen Rahmen (kein K.O.-Kriterium ausgelöst, da kein deutliches Überschreiten um >1,6 Mio. in einem Schritt). Track Record Score: 13/15. Policy/Domäne Score: 10/10. Qualifikation & Sprachen (PhD Economics, EN/DE/FR): 9/10.",
+        "gap_analysis": "Kein direkter Nachweis über Projekterfahrung als PM bei einem Einzelprojekt >2 Mio. €. Für 100% wäre eine Referenz in der Größenordnung 2,5-3,2 Mio. € erforderlich. SME-spezifische Industrieökosystem-Expertise ist implizit vorhanden, aber nicht als expliziter Skill im Profil ausgewiesen. Letzte 10% durch Subcontracting einer SME-Ecosystem-Spezialistin abdeckbar."
+      }
+    },
+    {
+      "role": "Methodological Expert – Web-based & AI-driven Organisational Data Collection",
+      "member_name": "Marcus Weber",
+      "total_score_percentage": 85,
+      "score_details": {
+        "hard_skills_reasoning": "Python (5/5), NLP (5/5), Data Engineering (4/5). Direkte Kernkompetenz für die geforderte Rolle: web-based und AI-driven organizational data collection. Als Data Science Lead verantwortet er die NLP-Klassifikationsarchitektur und die WebMap-Pipeline-Weiterentwicklung. Die Ausschreibung fordert 'technical signals' wie Job-Postings, API-Offerings, Patent-Analyse – Marcus Weber's NLP- und Python-Stack ist hierfür optimal. Hard Skills Score: 24/25.",
+        "experience_reasoning": "Referenz-Budget 1,05 Mio. €. Starke technische Referenzprojekte (ENISA-Projekt mit T. Vogel). Track Record Score: 11/15. Policy/Domäne Score: 6/10 (stärker auf technischer als auf policy-Seite). Qualifikation & Sprachen (M.Sc. Comp. Ling., EN/DE – nur 2 Sprachen, aber EN ist Pflichtsprache): 8/10.",
+        "gap_analysis": "Fehlende dritte EU-Sprache (z.B. FR) für breitere Client-Communication. Policy-Domänen-Expertise im AI-Act-Kontext ist nicht primäres Profil – hier übernimmt Sofia Chen die Domänenkompetenz. Data Engineering Score leicht unter Maximum (4/5) – Thomas Vogel ergänzt hier komplementär. Für 100% wäre dedizierte AI-Act-Kenntnisse und eine weitere EU-Sprache wünschenswert."
+      }
+    },
+    {
+      "role": "Sector Specialist – EU Digital Policy & AI Act Implementation",
+      "member_name": "Sofia Chen",
+      "total_score_percentage": 88,
+      "score_details": {
+        "hard_skills_reasoning": "Policy (5/5), Project Management (4/5). Sofia Chen ist die zentrale Ressource für die geforderte AI-Act-Implementierungsexpertise. Ihr M.A. Public Policy mit explizitem Fokus auf DORA, NIS2 und AI Act macht sie zur einzigen Person im Team-Pool mit direkt nachweisbarer AI-Act-Kompetenz – eine der kritischsten Anforderungen dieser Ausschreibung (Classification per AI Act Annex III, GPAI-Provider-Identifikation, Conformity Assessment Bodies). Hard Skills Score: 23/25.",
+        "experience_reasoning": "Referenz-Budget 1,28 Mio. €. Stärkste Policy-Referenz im Pool. Track Record Score: 12/15. Policy/Domäne Score: 10/10 (maximale Domänen-Relevanz durch explizite AI-Act-Expertise). Qualifikation & Sprachen (M.A. Public Policy, EN/DE/FR/ZH – 4 Sprachen): 10/10.",
+        "gap_analysis": "Technische Implementierungstiefe (Python, NLP) liegt außerhalb ihres Profils – hier kompensieren Weber und Vogel. Für 100% wäre eine abgeschlossene Referenz als Lead auf einem AI-spezifischen Mapping-Projekt hilfreich, da ihr Fokus bislang stärker auf Regulation als auf quantitativer Ökosystem-Kartierung liegt. Empfehlung: Als Policy Lead positionieren, nicht als methodologischen Lead."
+      }
+    },
+    {
+      "role": "Data Engineering Lead – Structured Dataset Maintenance & Validation",
+      "member_name": "Thomas Vogel",
+      "total_score_percentage": 82,
+      "score_details": {
+        "hard_skills_reasoning": "Python (5/5), NLP (4/5), Data Engineering (5/5). Thomas Vogel ist der stärkste Data Engineering-Experte im Pool (5/5 gegenüber Marcus Webers 4/5) und damit ideal für die geforderte 'data engineering capacity for maintaining and validating structured datasets'. Die Ausschreibung fordert Quarterly-Refresh-Zyklen, Ad-hoc-Updates within 10 working days und Machine-Readable JSON/CSV-Delivery – alles direkt in seinem Kompetenzprofil. Hard Skills Score: 23/25.",
+        "experience_reasoning": "Referenz-Budget 1,05 Mio. € (identisch mit Weber, beide haben ENISA-Projekt gemeinsam verantwortet). Track Record Score: 11/15. Policy/Domäne Score: 5/10 (technisches Profil, geringere Policy-Exposition als Becker oder Chen). Qualifikation & Sprachen (M.Sc. Data Science, DE/EN): 7/10.",
+        "gap_analysis": "Policy-Domänen-Expertise und Client-Communication-Skills sind schwächer ausgeprägt als bei Dr. Becker oder Sofia Chen – Vogel sollte als back-office Technical Lead positioniert werden, nicht als Client-Facing-Rolle. SME-Ecosystem-Analyse ist kein expliziter Skill. Für 100% wäre eine zusätzliche EU-Sprache und eine stärkere Policy-Exposition wünschenswert. Die Rolle 'SME and Industrial Ecosystem Specialist' ist im aktuellen Team-Pool nicht vollständig abgedeckt – hier wird Subcontracting empfohlen."
+      }
+    }
+  ]
+}

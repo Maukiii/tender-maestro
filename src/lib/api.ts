@@ -22,10 +22,30 @@ function isOffline(e: unknown): boolean {
 
 // ─── Types ───────────────────────────────────────────────────────────
 
+export interface TenderScore {
+  decision: "BID" | "NO-BID";
+  company_fit_score: number;
+  team_fit_score: number;
+  overall_score: number;
+  company_fit_reasoning: string;
+  ko_criterion_triggered: string | null;
+  team_proposal: Array<{
+    role: string;
+    member_name: string;
+    total_score_percentage: number;
+    score_details: {
+      hard_skills_reasoning: string;
+      experience_reasoning: string;
+      gap_analysis: string;
+    };
+  }>;
+}
+
 export interface UploadedTender {
   id: string;
   filename: string;
   uploadedAt: string;
+  score: TenderScore | null;
 }
 
 export interface KnowledgeStats {
@@ -240,6 +260,20 @@ export async function listTenders(): Promise<UploadedTender[]> {
     if (isOffline(e)) return [];
     throw e;
   }
+}
+
+/** Score a previously uploaded tender (runs the full extraction + scoring pipeline) */
+export async function scoreTender(documentId: string): Promise<TenderScore & { documentId: string }> {
+  const res = await fetch(`${API_BASE}/tender/score`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ documentId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail ?? `Score request failed: ${res.status}`);
+  }
+  return res.json();
 }
 
 /** Upload the tender PDF for analysis */

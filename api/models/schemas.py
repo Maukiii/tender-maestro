@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Any, Optional
 from pydantic import BaseModel
 
 
@@ -17,6 +17,22 @@ class KnowledgeStats(BaseModel):
 
 class AnalyzeRequest(BaseModel):
     documentId: str
+
+
+class ScoreRequest(BaseModel):
+    documentId: str
+
+
+class ScoreResult(BaseModel):
+    documentId: str
+    decision: str                          # "BID" | "NO-BID"
+    company_fit_score: int                 # 0-100
+    team_fit_score: int                    # 0-100
+    overall_score: int                     # 0-100
+    company_fit_reasoning: str
+    ko_criterion_triggered: Optional[str]  # null when decision is BID
+    # Kept as Any so minor AI output variations don't cause 500s
+    team_proposal: list[Any]
 
 
 class RevisionRequest(BaseModel):

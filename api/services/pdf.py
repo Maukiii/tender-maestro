@@ -1,11 +1,13 @@
-"""PDF upload storage and text extraction."""
+"""PDF upload storage, score persistence, and text extraction."""
 from __future__ import annotations
 
+import json
 import os
 import re
 import uuid
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 # Tenders are stored here so they persist and can be listed.
 # Default: documents/tenders/ relative to the project root (three levels up from this file).
@@ -42,11 +44,14 @@ def get_upload_path(doc_id: str) -> Path | None:
 
 
 def list_tenders() -> list[dict]:
-    """Return metadata for all tenders in the tender directory, newest first."""
+    """Return metadata (+ score if available) for all tenders, newest first."""
     _ensure_dir()
     result = []
     for path in sorted(TENDER_DIR.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True):
         if not path.is_file():
+            continue
+        # Skip score sidecar files
+        if path.name.endswith("_score.json"):
             continue
         parts = path.name.split("_", 1)
         if len(parts) != 2:
@@ -57,8 +62,29 @@ def list_tenders() -> list[dict]:
             "id": doc_id,
             "filename": original_name,
             "uploadedAt": datetime.fromtimestamp(mtime).isoformat(),
+            "score": load_score(doc_id),
         })
     return result
+
+
+def save_score(doc_id: str, score_data: dict[str, Any]) -> None:
+    """Persist a scoring result as a JSON sidecar file."""
+    _ensure_dir()
+    (TENDER_DIR / f"{doc_id}_score.json").write_text(
+        json.dumps(score_data, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def load_score(doc_id: str) -> dict[str, Any] | None:
+    """Load a previously saved scoring result, or None if not yet scored."""
+    score_file = TENDER_DIR / f"{doc_id}_score.json"
+    if not score_file.exists():
+        return None
+    try:
+        return json.loads(score_file.read_text(encoding="utf-8"))
+    except Exception:
+        return None
 
 
 def extract_text(path: Path) -> str:

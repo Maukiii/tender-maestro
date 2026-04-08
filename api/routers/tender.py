@@ -5,10 +5,15 @@ import uuid
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse
 
+from agents.kb_parser import load_kb_profile
+from agents.scoring_boss import run_scoring_boss
+from agents.tender_extraction_agent import run_tender_extractor_agent
 from models.schemas import (
     AnalyzeRequest,
     RevisionRequest,
     RevisionResult,
+    ScoreRequest,
+    ScoreResult,
     GenerateSectionRequest,
     GenerateSectionResult,
     ProposalBlock,
@@ -19,18 +24,69 @@ from services import ai, pdf
 router = APIRouter()
 
 
+# ── Tender list ───────────────────────────────────────────────────────────────
+
 @router.get("/list")
 async def list_tenders():
-    """Return all uploaded tenders from documents/tenders/."""
+    """Return all uploaded tenders from documents/tenders/, with scores if available."""
     return pdf.list_tenders()
 
 
+# ── Upload ────────────────────────────────────────────────────────────────────
+
 @router.post("/upload")
 async def upload_tender(file: UploadFile = File(...)):
+    """Save an uploaded tender document and return its document ID."""
     content = await file.read()
     doc_id = pdf.save_upload(content, file.filename or "tender.pdf")
     return {"documentId": doc_id}
 
+
+# ── Score ─────────────────────────────────────────────────────────────────────
+
+@router.post("/score", response_model=ScoreResult)
+async def score_tender(request: ScoreRequest):
+    """
+    Run the full scoring pipeline for an uploaded tender:
+      1. Extract structured data from the tender document.
+      2. Load the company knowledge base.
+      3. Run the Scoring Boss to produce a bid/no-bid decision with numeric scores.
+
+    The result is persisted as a sidecar file so the /list endpoint can return
+    it on subsequent page loads.
+    """
+    file_path = pdf.get_upload_path(request.documentId)
+    if file_path is None:
+        raise HTTPException(status_code=404, detail=f"Tender '{request.documentId}' not found.")
+
+    try:
+        tender_data = await run_tender_extractor_agent(file_path)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"Tender extraction failed: {e}")
+
+    kb_profile = load_kb_profile()
+
+    try:
+        score_raw = await run_scoring_boss(tender_data, kb_profile)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Scoring failed: {e}")
+
+    # Persist so the /list endpoint can serve it without re-scoring
+    pdf.save_score(request.documentId, score_raw)
+
+    return ScoreResult(
+        documentId=request.documentId,
+        decision=score_raw.get("decision", "NO-BID"),
+        company_fit_score=int(score_raw.get("company_fit_score", 0)),
+        team_fit_score=int(score_raw.get("team_fit_score", 0)),
+        overall_score=int(score_raw.get("overall_score", 0)),
+        company_fit_reasoning=score_raw.get("company_fit_reasoning", ""),
+        ko_criterion_triggered=score_raw.get("ko_criterion_triggered"),
+        team_proposal=score_raw.get("team_proposal", []),
+    )
+
+
+# ── Analyze (SSE draft generation) ───────────────────────────────────────────
 
 @router.post("/analyze")
 async def analyze_tender(request: AnalyzeRequest):
@@ -52,7 +108,7 @@ async def analyze_tender(request: AnalyzeRequest):
             yield f"data: {json.dumps({'type': 'status', 'step': step, 'progress': progress})}\n\n"
             await asyncio.sleep(0.4)
 
-        # Attempt to read an uploaded PDF
+        # Attempt to read the uploaded PDF for context
         tender_text = ""
         file_path = pdf.get_upload_path(request.documentId)
         if file_path and file_path.suffix.lower() == ".pdf":
@@ -97,6 +153,8 @@ async def analyze_tender(request: AnalyzeRequest):
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
+# ── Revise ────────────────────────────────────────────────────────────────────
+
 @router.post("/revise", response_model=RevisionResult)
 async def revise_draft(request: RevisionRequest):
     system = (
@@ -124,6 +182,8 @@ async def revise_draft(request: RevisionRequest):
     )
 
 
+# ── Generate section ──────────────────────────────────────────────────────────
+
 @router.post("/generate-section", response_model=GenerateSectionResult)
 async def generate_section(request: GenerateSectionRequest):
     """
@@ -132,9 +192,6 @@ async def generate_section(request: GenerateSectionRequest):
     The backend looks up the canonical template, optionally enriches
     the scaffold markdown via AI (if tenderContext is provided), and
     returns ready-to-use blocks.
-
-    Frontend can call this when the user adds a new section to get
-    properly structured blocks instantly.
     """
     template = get_template_by_id(request.sectionLabel) or get_template_by_label(
         request.sectionLabel
@@ -150,7 +207,6 @@ async def generate_section(request: GenerateSectionRequest):
         block_id = f"block-{uuid.uuid4().hex[:8]}"
         markdown = bt.markdown
 
-        # If tender context is provided, ask the AI to fill the scaffold
         if request.tenderContext and request.tenderContext.strip():
             system = (
                 "You are an expert tender writer. Fill in the following section block "
