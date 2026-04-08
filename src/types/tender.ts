@@ -50,3 +50,12 @@ export interface TenderProject {
   sectionsCount: number;
   status: "draft" | "submitted" | "in-review";
 }
+
+export interface GenerateSectionRequest {
+  sectionLabel: string;
+  tenderContext?: string;
+}
+
+export interface GenerateSectionResult {
+  blocks: { id: string; title: string; markdown: string }[];
+}
