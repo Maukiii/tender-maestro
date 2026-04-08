@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { GripVertical, Pencil, Eye } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import type { ProposalBlock } from "@/lib/proposalData";
 
 interface IngestPhaseProps {
@@ -65,7 +66,7 @@ export function IngestPhase({ blocks, sectionLabel, onUpdateBlock }: IngestPhase
                       prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-p:my-1"
                   >
                     {block.markdown.trim() ? (
-                      <ReactMarkdown>{block.markdown}</ReactMarkdown>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{block.markdown}</ReactMarkdown>
                     ) : (
                       <p className="text-muted-foreground italic">
                         Click to edit…
