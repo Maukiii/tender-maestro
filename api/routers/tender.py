@@ -26,6 +26,7 @@ from models.schemas import (
     GenerateSectionRequest,
     GenerateSectionResult,
     ProposalBlock,
+    SaveProposalRequest,
 )
 from models.section_templates import get_template_by_id, get_template_by_label
 from services import ai, pdf
@@ -179,6 +180,24 @@ async def draft_proposal(request: DraftRequest):
         yield f"data: {json.dumps({'type': 'done'})}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+
+# ── Proposal persistence ─────────────────────────────────────────────────────
+
+@router.post("/save-proposal")
+async def save_proposal(request: SaveProposalRequest):
+    """Persist the current proposal draft for a tender."""
+    pdf.save_proposal(request.documentId, request.sections)
+    return {"ok": True}
+
+
+@router.get("/proposal/{document_id}")
+async def get_proposal(document_id: str):
+    """Load a previously saved proposal draft."""
+    data = pdf.load_proposal(document_id)
+    if data is None:
+        raise HTTPException(status_code=404, detail="No saved proposal for this tender.")
+    return data
 
 
 # ── Analyze (SSE draft generation) ───────────────────────────────────────────

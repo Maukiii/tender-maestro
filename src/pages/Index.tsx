@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { KnowledgeSidebar } from "@/components/KnowledgeSidebar";
 import { AiChatPane } from "@/components/AiChatPane";
 import type { SelectionContext } from "@/components/AiChatPane";
@@ -7,8 +7,8 @@ import { ProjectSelection } from "@/components/ProjectSelection";
 import { ProcessingPhase } from "@/components/ProcessingPhase";
 import type { ProposalSection } from "@/lib/proposalData";
 import { SECTION_TEMPLATES, getTemplateById } from "@/lib/sectionTemplates";
-import { draftProposal, type DraftedSection } from "@/lib/api";
-import { ArrowLeft, FileText } from "lucide-react";
+import { draftProposal, saveProposal, loadProposal, type DraftedSection } from "@/lib/api";
+import { ArrowLeft, FileText, Check, Loader2 } from "lucide-react";
 
 type View = "projects" | "drafting" | "editor";
 
@@ -24,6 +24,30 @@ export const Index = () => {
   const [draftingStatus, setDraftingStatus] = useState("Starting agents…");
   const [draftingProgress, setDraftingProgress] = useState(0);
   const [draftingError, setDraftingError] = useState<string | null>(null);
+  const [currentDocumentId, setCurrentDocumentId] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-save whenever sections change in the editor (debounced 2 s)
+  useEffect(() => {
+    if (view !== "editor" || !currentDocumentId || sections.length === 0) return;
+    setSaveStatus("saving");
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(async () => {
+      try {
+        const payload = sections.map((s) => ({
+          section_id: s.id,
+          blocks: s.blocks.map((b) => ({ id: b.id, title: b.title, markdown: b.markdown })),
+        }));
+        await saveProposal(currentDocumentId, payload);
+        setSaveStatus("saved");
+        setTimeout(() => setSaveStatus("idle"), 2000);
+      } catch {
+        setSaveStatus("idle");
+      }
+    }, 2000);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sections]);
 
   const handleUpdateBlock = useCallback((blockId: string, markdown: string) => {
     setSections((prev) =>
@@ -101,6 +125,7 @@ export const Index = () => {
   }, []);
 
   const handleSelectTender = useCallback(async (documentId: string) => {
+    setCurrentDocumentId(documentId);
     setDraftingStatus("Starting agents…");
     setDraftingProgress(0);
     setDraftingError(null);
@@ -160,8 +185,48 @@ export const Index = () => {
     }
   }, []);
 
+  const handleContinueProposal = useCallback(async (documentId: string) => {
+    setCurrentDocumentId(documentId);
+    setDraftingStatus("Loading saved proposal…");
+    setDraftingProgress(60);
+    setDraftingError(null);
+    setSections([]);
+    setPendingSectionIds(new Set());
+    setView("drafting");
+    try {
+      const data = await loadProposal(documentId);
+      if (!data?.sections?.length) {
+        handleSelectTender(documentId);
+        return;
+      }
+      const loaded: ProposalSection[] = data.sections.map((s) => {
+        const template = getTemplateById(s.section_id);
+        return {
+          id: s.section_id,
+          label: template?.label ?? s.section_id,
+          icon: template?.icon ?? FileText,
+          blocks: s.blocks.map((b) => ({
+            id: b.id || genId("block"),
+            title: b.title,
+            markdown: b.markdown,
+          })),
+        };
+      });
+      setSections(loaded);
+      setView("editor");
+    } catch (err) {
+      setDraftingError(err instanceof Error ? err.message : String(err));
+      setView("drafting");
+    }
+  }, [handleSelectTender]);
+
   if (view === "projects") {
-    return <ProjectSelection onSelect={handleSelectTender} />;
+    return (
+      <ProjectSelection
+        onSelect={handleSelectTender}
+        onContinue={handleContinueProposal}
+      />
+    );
   }
 
   if (view === "drafting") {
@@ -225,6 +290,19 @@ export const Index = () => {
           <h1 className="text-base font-semibold text-foreground">
             Block View
           </h1>
+          <div className="flex-1" />
+          {saveStatus === "saving" && (
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Saving…
+            </span>
+          )}
+          {saveStatus === "saved" && (
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Check className="h-3 w-3" />
+              Saved
+            </span>
+          )}
         </header>
 
         <IngestPhase

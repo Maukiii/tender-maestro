@@ -94,3 +94,8 @@ class GenerateSectionRequest(BaseModel):
 
 class GenerateSectionResult(BaseModel):
     blocks: list[ProposalBlock]
+
+
+class SaveProposalRequest(BaseModel):
+    documentId: str
+    sections: list[dict]  # [{section_id, blocks: [{id, title, markdown}]}]

@@ -44,14 +44,15 @@ def get_upload_path(doc_id: str) -> Path | None:
 
 
 def list_tenders() -> list[dict]:
-    """Return metadata (+ score if available) for all tenders, newest first."""
+    """Return metadata (+ score + proposal flag) for all tenders, newest first."""
     _ensure_dir()
     result = []
     for path in sorted(TENDER_DIR.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True):
         if not path.is_file():
             continue
-        # Skip JSON sidecar files (score, tender data)
-        if path.name.endswith("_score.json") or path.name.endswith("_tender.json"):
+        # Skip JSON sidecar files (score, tender data, proposal)
+        if (path.name.endswith("_score.json") or path.name.endswith("_tender.json")
+                or path.name.endswith("_proposal.json")):
             continue
         parts = path.name.split("_", 1)
         if len(parts) != 2:
@@ -63,6 +64,7 @@ def list_tenders() -> list[dict]:
             "filename": original_name,
             "uploadedAt": datetime.fromtimestamp(mtime).isoformat(),
             "score": load_score(doc_id),
+            "hasProposal": (TENDER_DIR / f"{doc_id}_proposal.json").exists(),
         })
     return result
 
@@ -94,6 +96,31 @@ def save_score(doc_id: str, score_data: dict[str, Any]) -> None:
         json.dumps(score_data, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
+
+
+def save_proposal(doc_id: str, sections: list[dict[str, Any]]) -> None:
+    """Persist a drafted proposal as a JSON sidecar file."""
+    _ensure_dir()
+    data = {
+        "document_id": doc_id,
+        "saved_at": datetime.utcnow().isoformat(),
+        "sections": sections,
+    }
+    (TENDER_DIR / f"{doc_id}_proposal.json").write_text(
+        json.dumps(data, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def load_proposal(doc_id: str) -> dict[str, Any] | None:
+    """Load a previously saved proposal, or None if not available."""
+    proposal_file = TENDER_DIR / f"{doc_id}_proposal.json"
+    if not proposal_file.exists():
+        return None
+    try:
+        return json.loads(proposal_file.read_text(encoding="utf-8"))
+    except Exception:
+        return None
 
 
 def load_score(doc_id: str) -> dict[str, Any] | None:

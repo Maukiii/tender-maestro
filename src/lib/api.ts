@@ -46,6 +46,12 @@ export interface UploadedTender {
   filename: string;
   uploadedAt: string;
   score: TenderScore | null;
+  hasProposal?: boolean;
+}
+
+export interface SavedSection {
+  section_id: string;
+  blocks: { id: string; title: string; markdown: string }[];
 }
 
 export interface KnowledgeStats {
@@ -322,6 +328,24 @@ export async function draftProposal(
     }
   }
   throw new Error("Stream ended without done event");
+}
+
+/** Save the current proposal draft to the backend. */
+export async function saveProposal(documentId: string, sections: SavedSection[]): Promise<void> {
+  const res = await fetch(`${API_BASE}/tender/save-proposal`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ documentId, sections }),
+  });
+  if (!res.ok) throw new Error(`Save failed: ${res.status}`);
+}
+
+/** Load a previously saved proposal. Returns null if none exists. */
+export async function loadProposal(documentId: string): Promise<{ sections: SavedSection[] } | null> {
+  const res = await fetch(`${API_BASE}/tender/proposal/${documentId}`);
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`Load failed: ${res.status}`);
+  return res.json();
 }
 
 /** Score a previously uploaded tender (runs the full extraction + scoring pipeline) */

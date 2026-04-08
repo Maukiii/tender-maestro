@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { ChevronDown, ChevronUp, Clock, Plus, Target, Upload, X, Loader2, AlertTriangle, FileEdit } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, Plus, Target, Upload, X, Loader2, AlertTriangle, FileEdit, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { listTenders, uploadTenderDocument, scoreTender, type UploadedTender, type TenderScore } from "@/lib/api";
 
@@ -130,9 +130,10 @@ function formatUploadedAt(iso: string): string {
 
 interface ProjectSelectionProps {
   onSelect: (projectId: string) => void;
+  onContinue: (projectId: string) => void;
 }
 
-export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
+export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps) {
   const [showUploadOverlay, setShowUploadOverlay] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -386,14 +387,26 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
                     {isExpanded && score && (
                       <div className="px-5 pb-5">
                         <ScoreExplanation score={score} />
-                        <div className="mt-4 pt-3 border-t border-border flex justify-end">
+                        <div className="mt-4 pt-3 border-t border-border flex items-center justify-end gap-2">
+                          {tender.hasProposal && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="gap-1.5 text-muted-foreground"
+                              onClick={() => onSelect(tender.id)}
+                              title="Discard saved draft and re-run all agents"
+                            >
+                              <RotateCcw className="h-3.5 w-3.5" />
+                              Re-Draft
+                            </Button>
+                          )}
                           <Button
                             size="sm"
                             className="gap-1.5"
-                            onClick={() => onSelect(tender.id)}
+                            onClick={() => tender.hasProposal ? onContinue(tender.id) : onSelect(tender.id)}
                           >
                             <FileEdit className="h-3.5 w-3.5" />
-                            Draft Proposal
+                            {tender.hasProposal ? "Continue Editing" : "Draft Proposal"}
                           </Button>
                         </div>
                       </div>
