@@ -62,7 +62,7 @@ const Index = () => {
           </button>
           <div className="h-5 w-px bg-border" />
           <h1 className="text-base font-semibold text-foreground">
-            Tender Drafting Agent
+            Block View
           </h1>
         </header>
 
