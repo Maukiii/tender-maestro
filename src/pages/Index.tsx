@@ -6,6 +6,7 @@ import { IngestPhase } from "@/components/IngestPhase";
 import { ProjectSelection } from "@/components/ProjectSelection";
 import { DEFAULT_SECTIONS } from "@/lib/proposalData";
 import type { ProposalSection } from "@/lib/proposalData";
+import { SECTION_TEMPLATES } from "@/lib/sectionTemplates";
 import { ArrowLeft, FileText } from "lucide-react";
 
 type View = "projects" | "editor";
@@ -48,11 +49,21 @@ export const Index = () => {
   }, [scrollContainer]);
 
   const handleAddSection = useCallback((label: string) => {
+    // Look up canonical template for pre-structured blocks
+    const template = SECTION_TEMPLATES.find(
+      (t) => t.label.toLowerCase() === label.toLowerCase() || t.id === label,
+    );
     const newSection: ProposalSection = {
       id: genId("section"),
       label,
-      icon: FileText,
-      blocks: [{ id: genId("block"), title: "Untitled Block", markdown: "" }],
+      icon: template?.icon ?? FileText,
+      blocks: template
+        ? template.blocks.map((bt) => ({
+            id: genId("block"),
+            title: bt.titleSuffix,
+            markdown: bt.markdown,
+          }))
+        : [{ id: genId("block"), title: "Untitled Block", markdown: "" }],
     };
     setSections((prev) => [...prev, newSection]);
   }, []);
