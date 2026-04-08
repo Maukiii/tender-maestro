@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef, useEffect } from "react";
-import { Eye } from "lucide-react";
+import { useState, useCallback, useRef } from "react";
+import { Eye, MessageSquare } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -9,20 +9,24 @@ interface IngestPhaseProps {
   sections: ProposalSection[];
   onUpdateBlock: (blockId: string, markdown: string) => void;
   onTextSelect: (text: string, blockTitle: string) => void;
+  onSectionReference: (sectionId: string) => void;
   onScrollContainerReady?: (el: HTMLElement) => void;
 }
 
-export function IngestPhase({ sections, onUpdateBlock, onTextSelect, onScrollContainerReady }: IngestPhaseProps) {
+export function IngestPhase({ sections, onUpdateBlock, onTextSelect, onSectionReference, onScrollContainerReady }: IngestPhaseProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const handleMouseUp = useCallback(
     (blockTitle: string) => {
-      const sel = window.getSelection();
-      const text = sel?.toString().trim();
-      if (text && text.length > 0) {
-        onTextSelect(text, blockTitle);
-      }
+      // Use a short timeout so the selection is finalized before we read it
+      setTimeout(() => {
+        const sel = window.getSelection();
+        const text = sel?.toString().trim();
+        if (text && text.length > 0) {
+          onTextSelect(text, blockTitle);
+        }
+      }, 10);
     },
     [onTextSelect]
   );
@@ -48,12 +52,21 @@ export function IngestPhase({ sections, onUpdateBlock, onTextSelect, onScrollCon
                 data-section-id={section.id}
               >
                 {/* Section heading */}
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 mb-4 group/heading">
                   <Icon className="h-4 w-4 text-muted-foreground" />
                   <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
                     {section.label}
                   </h2>
                   <div className="flex-1 h-px bg-border ml-2" />
+                  <button
+                    type="button"
+                    onClick={() => onSectionReference(section.id)}
+                    className="opacity-0 group-hover/heading:opacity-100 p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-muted transition-all"
+                    aria-label={`Reference ${section.label} in AI chat`}
+                    title="Reference in AI chat"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5" />
+                  </button>
                 </div>
 
                 {/* Blocks */}
@@ -97,9 +110,14 @@ export function IngestPhase({ sections, onUpdateBlock, onTextSelect, onScrollCon
                           />
                         ) : (
                           <div
-                            onClick={() => {
+                            onMouseDown={(e) => {
+                              // Store the mouse-down target so we can check on click
+                              (e.currentTarget as HTMLElement).dataset.mouseDownTime = String(Date.now());
+                            }}
+                            onClick={(e) => {
                               const sel = window.getSelection();
-                              if (!sel || sel.toString().trim().length === 0) {
+                              const hasSelection = sel && sel.toString().trim().length > 0;
+                              if (!hasSelection) {
                                 setEditingId(block.id);
                               }
                             }}

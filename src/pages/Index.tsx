@@ -35,6 +35,13 @@ const Index = () => {
     setSelection({ text, blockTitle });
   }, []);
 
+  const handleSectionReference = useCallback((sectionId: string) => {
+    const section = sections.find((s) => s.id === sectionId);
+    if (!section) return;
+    const allText = section.blocks.map((b) => `**${b.title}**\n${b.markdown}`).join("\n\n");
+    setSelection({ text: allText, blockTitle: "", sectionLabel: section.label });
+  }, [sections]);
+
   const handleSidebarSelect = useCallback((sectionId: string) => {
     if (!scrollContainer) return;
     const el = scrollContainer.querySelector(`[data-section-id="${sectionId}"]`);
@@ -96,6 +103,7 @@ const Index = () => {
           sections={sections}
           onUpdateBlock={handleUpdateBlock}
           onTextSelect={handleTextSelect}
+          onSectionReference={handleSectionReference}
           onScrollContainerReady={setScrollContainer}
         />
       </main>
