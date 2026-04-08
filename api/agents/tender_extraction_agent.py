@@ -13,70 +13,70 @@ from pathlib import Path
 from services.ai import generate_text
 
 
-EXTRACTION_PROMPT = """Agiere als Senior EU Procurement Specialist mit Expertise in der Analyse von Ausschreibungen der Europäischen Kommission (DG CNECT). Deine Aufgabe ist es, den beigefügten Text ("Tender Specifications") vollständig zu erfassen und eine hochdetaillierte, technisch präzise Zusammenfassung in einem validen JSON-Format zu erstellen.
+EXTRACTION_PROMPT = """Serve as a Senior EU Procurement Specialist with expertise in analyzing European Commission (DG CNECT) tenders. Your task is to fully capture the attached text (“Tender Specifications”) and create a highly detailed, technically accurate summary in a valid JSON format.
 
-WICHTIGE INSTRUKTIONEN FÜR DIE DATENEXTRAKTION:
-1. VOLLSTÄNDIGKEIT: Fasse Listen nicht grob zusammen. Übernehme alle spezifischen Unterpunkte von Aufgaben, technischen Anforderungen und Mindestanforderungen an das Personal.
-2. SCHWELLENWERTE: Extrahiere alle harten Zahlen (Mindestumsatz, Jahre an Berufserfahrung, Fristen in Monaten, Gewichtung in Prozent).
-3. TERMINOLOGIE: Behalte die offizielle EU-Terminologie bei (z.B. "Selection Criteria", "Award Criteria", "Deliverables", "GPAI", "AI Act Annex III").
-4. KEINE AGGREGATION: Wenn ein Dokument 71 Seiten hat, erwarte ich in den Arrays der JSON-Datei Dutzende von Einträgen. Reduziere komplexe Abschnitte nicht auf einen einzigen Satz.
+IMPORTANT INSTRUCTIONS FOR DATA EXTRACTION:
+1. COMPLETENESS: Do not summarize lists loosely. Include all specific sub-items related to tasks, technical requirements, and minimum personnel requirements.
+2. THRESHOLD VALUES: Extract all hard numbers (minimum turnover, years of professional experience, deadlines in months, weighting in percent).
+3. TERMINOLOGY: Maintain official EU terminology (e.g., “Selection Criteria,” “Award Criteria,” “Deliverables,” “GPAI,” “AI Act Annex III”).
+4. NO AGGREGATION: If a document has a very large number of pages (70+), I expect dozens of entries in the JSON file’s arrays. Do not reduce complex sections to a single sentence.
 
-STRUKTUR DES JSON-OBJEKTS:
-Das JSON muss exakt folgender Hierarchie folgen:
+STRUCTURE OF THE JSON OBJECT:
+The JSON must follow exactly the following hierarchy:
 
 {
-  "tender_metadata": {
-    "title": "",
-    "reference_number": "",
-    "contracting_authority": "",
-    "estimated_value_euro": 0,
-    "max_duration_months": 0,
-    "procedure_type": "",
-    "submission_deadline": ""
+  “tender_metadata”: {
+    “title”: “”,
+    “reference_number”: “”,
+    “contracting_authority”: “”,
+    “estimated_value_euro”: 0,
+    “max_duration_months”: 0,
+    “procedure_type”: “”,
+    “submission_deadline”: “”
   },
-  "strategic_context": {
-    "background_and_policy_context": "",
-    "core_objectives": []
+  “strategic_context”: {
+    “background_and_policy_context”: “”,
+    “core_objectives”: []
   },
-  "operational_scope": {
-    "tasks": [
-       { "task_id": "", "title": "", "detailed_description": "", "sub_tasks": [] }
+  “operational_scope”: {
+    “tasks”: [
+       { “task_id”: “”, “title”: “”, “detailed_description”: ‘’, “sub_tasks”: [] }
     ],
-    "technical_methodology_requirements": []
+    “technical_methodology_requirements”: []
   },
-  "deliverables": [
-    { "id": "", "title": "", "description": "", "delivery_month": "", "frequency": "" }
+  “deliverables”: [
+    { “id”: “”, “title”: “”, “description”: “”, “delivery_month”: “”, ‘frequency’: “” }
   ],
-  "resource_requirements": {
-    "team_profiles": [
-      { "role": "", "minimum_requirements_years_exp": 0, "specific_expertise_required": [] }
+  “resource_requirements”: {
+    “team_profiles”: [
+      { “role”: “”, ‘minimum_requirements_years_exp’: 0, “specific_expertise_required”: [] }
     ],
-    "subcontracting_rules": ""
+    “subcontracting_rules”: “”
   },
-  "compliance_and_selection": {
-    "financial_economic_capacity": { "min_turnover_required": 0, "other_requirements": "" },
-    "technical_professional_capacity": { "reference_projects_required": 0, "reference_details": "" }
+  “compliance_and_selection”: {
+    “financial_economic_capacity”: { “min_turnover_required”: 0, ‘other_requirements’: “” },
+    “technical_professional_capacity”: { “reference_projects_required”: 0, ‘reference_details’: “” }
   },
-  "evaluation_logic": {
-    "quality_price_ratio": "",
-    "technical_award_criteria": [
-       { "criterion": "", "max_points": 0, "weight": "", "detailed_evaluation_logic": "" }
+  “evaluation_logic”: {
+    “quality_price_ratio”: “”,
+    “technical_award_criteria”: [
+       { “criterion”: “”, “max_points”: 0, “weight”: “”, ‘detailed_evaluation_logic’: “” }
     ],
-    "price_weight": ""
+    “price_weight”: “”
   },
-  "submission_logistics": {
-    "required_documents": [],
-    "page_limits": { "technical_offer": 0, "total_annexes": 0 },
-    "submission_platform": ""
+  “submission_logistics”: {
+    “required_documents”: [],
+    “page_limits”: { ‘technical_offer’: 0, “total_annexes”: 0 },
+    “submission_platform”: “”
   }
 }
 
-AUSGABE-REGELN:
-- Antworte NUR mit dem JSON-String.
-- Keine Einleitung ("Hier ist die Zusammenfassung...").
-- Keine Markdown-Code-Blöcke (keine Backticks ```).
-- Stelle sicher, dass das JSON valide ist und alle Sonderzeichen korrekt escaped sind.
-- Analysiere das Dokument Schritt für Schritt, um Informationen aus der Mitte und dem Ende des Dokuments nicht zu übersehen."""
+OUTPUT RULES:
+- Respond ONLY with the JSON string.
+- No introduction (“Here is the summary...”).
+- No Markdown code blocks (no backticks ```).
+- Ensure that the JSON is valid and all special characters are correctly escaped.
+- Parse the document step by step to avoid overlooking information in the middle and at the end of the document."""
 
 
 async def run_tender_extractor_agent(file_path: Path) -> dict:
