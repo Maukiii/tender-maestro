@@ -46,7 +46,7 @@ const Index = () => {
     <div className="flex min-h-screen w-full">
       <KnowledgeSidebar stats={stats} />
 
-      <main className="flex-1 flex flex-col min-h-screen bg-background">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
         {/* Top bar */}
         <header className="h-14 flex items-center justify-between px-8 border-b border-border bg-card shrink-0">
           <h1 className="text-base font-semibold text-foreground">
@@ -66,7 +66,7 @@ const Index = () => {
           )}
         </header>
 
-        {phase === "ingest" && <IngestPhase onAnalyze={handleAnalyze} />}
+        {phase === "ingest" && <IngestPhase />}
         {phase === "processing" && (
           <ProcessingPhase statusText={statusText} progress={progress} />
         )}
