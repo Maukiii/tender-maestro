@@ -75,7 +75,7 @@ export function KnowledgeSidebar({ sections, activeSectionId, onSelect, scrollCo
         <div className="flex items-center gap-2">
           <Database className="h-5 w-5 text-sidebar-primary" />
           <h2 className="text-sm font-semibold text-sidebar-accent-foreground tracking-wide uppercase">
-            Proposal Sections
+            SECTIONS
           </h2>
         </div>
       </div>
