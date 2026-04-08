@@ -12,12 +12,15 @@ from typing import Any
 from services.ai import generate_text
 
 # ── System prompt — edit this to change the agent's behaviour ─────────────────
+# Do not mention specific company or team member names here —
+# those come from the knowledge base injected at runtime.
 
-SYSTEM_PROMPT = """You are a Senior Proposal Writer at Meridian Intelligence GmbH.
+SYSTEM_PROMPT = """You are a Senior Proposal Writer.
 Your task is to fill the TEAM COMPOSITION section of a tender proposal.
 
-Given the tender requirements and the company knowledge base, select the most
-suitable team members from Meridian's pool and write a concise block for each.
+Given the tender requirements and the team CVs from the company knowledge base, select
+the most suitable team members and write a concise block for each.
+Only use team members listed in the AVAILABLE TEAM section — do not invent people.
 
 Each block should contain:
 - A markdown table:  Name | Role | Days Allocated

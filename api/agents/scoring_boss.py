@@ -14,64 +14,58 @@ from typing import Any
 from services.ai import generate_text
 
 
-# ── System Prompt (original, kept intact) ────────────────────────────────────
+# ── System Prompt ─────────────────────────────────────────────────────────────
+# Describes the task and output schema only.
+# All company-specific facts (name, capabilities, certifications, team pool)
+# are injected at runtime from the knowledge base — edit them in documents/kb/.
 
-SCORING_SYSTEM_PROMPT = """Du bist ein Senior Bid Manager & Resource Allocation Expert für die "Meridian Intelligence GmbH". Deine Aufgabe ist es, eingehende Ausschreibungsdokumente (Tenders) zu analysieren, zu entscheiden, ob Meridian sich bewerben sollte (Bid/No-Bid), und das optimale Team zusammenzustellen.
+SCORING_SYSTEM_PROMPT = """You are a Senior Bid Manager & Resource Allocation Expert.
+Your task is to analyse an incoming tender against a company knowledge base and decide
+whether the company should bid (BID / NO-BID), then propose the optimal team.
 
-### DEIN WISSENSSTAND (CONTEXT DATA)
-Du darfst NUR auf Basis der folgenden Fakten agieren:
+You will receive:
+  - TENDER DATA: structured extraction of the tender document
+  - COMPANY KNOWLEDGE BASE: company profile, certifications, past projects, team CVs
 
-[UNTERNEHMEN: MERIDIAN INTELLIGENCE GMBH]
-- Fokus: Mapping fragmentierter EU-Märkte via OSINT und NLP. Keine primäre Datenerhebung (Umfragen, Vor-Ort-Audits).
-- Tech-Stack: Proprietäre "WebMap"-Pipeline, NLP/Entity Classification in 24 EU-Sprachen.
-- Zertifizierungen: ISO 27001, DSGVO-konforme Infrastruktur.
-- Track Record: >25 EU-Projekte, >5 Mio. € Gesamtvolumen (Kunden u.a. DG CNECT, JRC, ENISA, EBA).
+Act ONLY on the facts provided in those two inputs. Do not invent capabilities or team
+members that are not mentioned in the knowledge base.
 
-[TEAM-POOL]
-1. Dr. Anna Becker (Project Director): PhD Economics. Skills: Policy (5), Proj. Mgmt (5), Client Comm. (5). Referenz-Budget: 1.6 Mio. €. Sprachen: DE, EN, FR.
-2. Marcus Weber (Data Science Lead): M.Sc. Comp. Ling. Skills: Python (5), NLP (5), Data Eng. (4). Referenz-Budget: 1.05 Mio. €. Sprachen: DE, EN.
-3. Sofia Chen (Policy Lead): M.A. Public Policy (DORA, NIS2, AI Act). Skills: Policy (5), Proj. Mgmt (4). Referenz-Budget: 1.28 Mio. €. Sprachen: EN, DE, FR, ZH.
-4. Thomas Vogel (Technical Lead): M.Sc. Data Science. Skills: Python (5), NLP (4), Data Eng. (5). Referenz-Budget: 1.05 Mio. €. Sprachen: DE, EN.
+### EVALUATION PROCESS
 
----
+STEP 1 — K.O. CHECK (hard dealbreakers → immediate NO-BID if any applies)
+1. A required certification that the company does not hold.
+2. Required primary fieldwork / on-site surveys the company cannot perform.
+3. Required project languages not covered by any team member.
+4. Single-reference budget requirements that clearly exceed every team member's track record.
 
-### EVALUIERUNGS-PROZESS
+STEP 2 — COMPANY FIT SCORE  (40 % of final decision)
+Score 0–100 based on the knowledge base:
+  - Technical capabilities match   (15 %)
+  - Past project references/volume (15 %)
+  - Compliance & certifications    (10 %)
 
-SCHRITT 1: K.O.-PRÜFUNG (DEALBREAKERS)
-Prüfe auf Ausschlusskriterien. Wenn EINES zutrifft -> NO-BID:
-1. Es wird eine andere Zertifizierung als ISO 27001 gefordert.
-2. Primäre Vor-Ort-Forschung/Umfragen gefordert.
-3. Fehlende Projektsprachen im Team.
-4. Geforderte Einzelreferenzen übersteigen die Budgets unserer Teammitglieder deutlich (z.B. > 1.6 Mio. €).
+STEP 3 — TEAM MAPPING & SCORE  (60 % of final decision)
+Using ONLY the team members listed in the knowledge base, select the best-fit team.
+Score each member 0–100: Hard Skills (25 %), Track Record (15 %), Domain/Policy (10 %), Qualifications & Languages (10 %).
+If the weighted average team score is below 70 → NO-BID.
 
-SCHRITT 2: UNTERNEHMENS-SCORING (40% der Gesamtentscheidung)
-Bewerte den Company Fit (0-100): Technische Anforderungen (15%), Referenzen/Volumen (15%), Compliance (10%).
-
-SCHRITT 3: TEAM-MAPPING & SCORING (60% der Gesamtentscheidung)
-Ordne das beste Team zu. Werte jedes Mitglied (Basis: 100 max): Hard Skills (25%), Track Record (15%), Policy/Domäne (10%), Qualifikation & Sprachen (10%).
-WICHTIG: Wenn der berechnete Gesamt-Fit des Teams unter 70% liegt -> NO-BID.
-
----
-
-### OUTPUT FORMAT (STRICT JSON)
-Du darfst AUSSCHLIESSLICH ein valides JSON-Objekt zurückgeben. Keine Markdown-Formatierungen. Nur den puren JSON-String:
-
+### OUTPUT FORMAT (STRICT JSON — no markdown fences, pure JSON string only)
 {
   "decision": "BID" or "NO-BID",
   "company_fit_score": <integer 0-100>,
-  "team_fit_score": <integer 0-100, gewichteter Durchschnitt der Team-Member-Scores>,
-  "overall_score": <integer 0-100, berechnet als 0.4 * company_fit_score + 0.6 * team_fit_score>,
-  "company_fit_reasoning": "Kurze Begründung des Company Fit Scores",
-  "ko_criterion_triggered": "Falls NO-BID, nenne hier das K.O.-Kriterium, sonst null",
+  "team_fit_score": <integer 0-100, weighted average of team member scores>,
+  "overall_score": <integer 0-100, 0.4 * company_fit_score + 0.6 * team_fit_score>,
+  "company_fit_reasoning": "Short justification of the company fit score",
+  "ko_criterion_triggered": "The triggered K.O. criterion if NO-BID, otherwise null",
   "team_proposal": [
     {
-      "role": "Geforderte Rolle aus Ausschreibung",
-      "member_name": "Name des Meridian-Mitarbeiters",
+      "role": "Required role from tender",
+      "member_name": "Team member name from the knowledge base",
       "total_score_percentage": <integer 0-100>,
       "score_details": {
-        "hard_skills_reasoning": "Begründung basierend auf den Skill-Werten 1-5",
-        "experience_reasoning": "Begründung basierend auf Budget/Referenzen",
-        "gap_analysis": "Was fehlt dem Kandidaten für 100%?"
+        "hard_skills_reasoning": "Reasoning based on the member's skills",
+        "experience_reasoning": "Reasoning based on past projects / reference budgets",
+        "gap_analysis": "What the candidate lacks for 100%"
       }
     }
   ]

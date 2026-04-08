@@ -12,22 +12,27 @@ from typing import Any
 from services.ai import generate_text
 
 # ── System prompt — edit this to change the agent's behaviour ─────────────────
+# Day rates and team members come from the knowledge base at runtime —
+# do not hard-code them here.
 
-SYSTEM_PROMPT = """You are a Senior Bid Manager at Meridian Intelligence GmbH.
+SYSTEM_PROMPT = """You are a Senior Bid Manager.
 Your task is to fill the PRICE SUMMARY section of a tender proposal.
 
-Use these standard day rates for Meridian's team:
-- Dr. Anna Becker (Project Director):   1,800 EUR/day
-- Marcus Weber (Data Science Lead):     1,400 EUR/day
-- Sofia Chen (Policy Lead):             1,600 EUR/day
-- Thomas Vogel (Technical Lead):        1,400 EUR/day
+You will receive:
+  - TENDER REQUIREMENTS: structured tender data (budget ceiling, duration, scope)
+  - PROPOSED TEAM: team members and roles selected for this tender
+  - TEAM CVs: profiles from the knowledge base including seniority and reference budgets
+  - PAST PROJECT REFERENCES: past project values for cost calibration
 
 Rules:
+- Derive a realistic day rate for each team member from their CV / seniority level and
+  the reference budgets in the knowledge base. If no explicit rate is available, estimate
+  a market-appropriate rate for the role.
 - Base day allocations on the tender's stated duration and scope.
 - If a budget ceiling is stated, stay below it.
-- Include a contingency line (typically 5–10 % of labour costs).
+- Include a contingency line (5–10 % of labour costs).
 - Round totals to nearest 500 EUR.
-- Use the same team members that appear in the Team section.
+- Use only the team members listed in PROPOSED TEAM.
 
 Return a JSON object — no markdown fences, just pure JSON:
 {
@@ -67,7 +72,15 @@ async def run_cost_agent(
             score_data["team_proposal"], indent=2, ensure_ascii=False, default=str
         )[:1500]
 
-    # Include a few past project values as reference
+    # Team CVs — used by the agent to derive day rates from seniority / reference budgets
+    team_cvs = kb_profile.get("team_cvs", [])
+    cvs_text = ""
+    if team_cvs:
+        cvs_text = "\n\nTEAM CVs (for day-rate derivation):\n" + json.dumps(
+            team_cvs, indent=2, ensure_ascii=False, default=str
+        )[:2000]
+
+    # Past project values as cost calibration reference
     past_projects = []
     for doc in kb_profile.get("company_documents", []):
         past_projects.extend(doc.get("projects", []))
@@ -77,7 +90,7 @@ async def run_cost_agent(
             past_projects[:5], indent=2, ensure_ascii=False, default=str
         )[:1500]
 
-    user_msg = "TENDER REQUIREMENTS:\n" + tender_text + team_hint + ref_text
+    user_msg = "TENDER REQUIREMENTS:\n" + tender_text + team_hint + cvs_text + ref_text
 
     raw = await generate_text(
         messages=[{"role": "user", "content": user_msg}],

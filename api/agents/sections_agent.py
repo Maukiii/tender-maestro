@@ -15,8 +15,10 @@ from typing import Any
 from services.ai import generate_text
 
 # ── System prompt — edit this to change the agent's behaviour ─────────────────
+# Do not mention specific company names, tools, or certifications here —
+# those facts come from the knowledge base injected at runtime.
 
-SYSTEM_PROMPT = """You are a Senior Proposal Writer at Meridian Intelligence GmbH.
+SYSTEM_PROMPT = """You are a Senior Proposal Writer.
 Your task is to fill four sections of a tender proposal:
   1. Executive Summary   (section_id: "exec-summary")
   2. Problem Framing     (section_id: "problem-framing")
@@ -25,8 +27,9 @@ Your task is to fill four sections of a tender proposal:
 
 Write in a professional, concise EU-tender style.
 Tailor every section to the specific tender requirements provided.
-Draw on Meridian's WebMap pipeline, OSINT/NLP capabilities, ISO 27001 compliance,
-and relevant past project experience from the knowledge base.
+Draw exclusively on the company profile, capabilities, methodology, and past project
+experience supplied in the COMPANY PROFILE and METHODOLOGY REFERENCE sections below.
+Do not invent tools, certifications, or credentials that are not mentioned there.
 
 Block structure per section:
   exec-summary  → 1 block "Overview":          3–4 paragraph executive narrative
