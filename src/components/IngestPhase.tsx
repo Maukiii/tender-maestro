@@ -78,28 +78,6 @@ export function IngestPhase({ onAnalyze }: IngestPhaseProps) {
         </div>
       </div>
 
-      {/* Sticky footer */}
-      <div className="shrink-0 border-t border-border bg-card px-8 py-4 flex justify-center">
-        <Button
-          size="lg"
-          disabled={!hasContent}
-          onClick={() => {
-            // Create a synthetic file from blocks for downstream compatibility
-            const combined = blocks
-              .map((b) => `## ${b.title}\n\n${b.markdown}`)
-              .join("\n\n---\n\n");
-            const blob = new Blob([combined], { type: "text/markdown" });
-            const syntheticFile = new File([blob], "proposal-blocks.md", {
-              type: "text/markdown",
-            });
-            onAnalyze(syntheticFile);
-          }}
-          className="px-8 py-6 text-base font-semibold gap-2 rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-shadow"
-        >
-          Analyze & Draft
-          <ArrowRight className="h-5 w-5" />
-        </Button>
-      </div>
     </div>
   );
 }
