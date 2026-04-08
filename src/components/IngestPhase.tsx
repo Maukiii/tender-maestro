@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, GripVertical } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { GripVertical } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 
 interface ProposalBlock {
