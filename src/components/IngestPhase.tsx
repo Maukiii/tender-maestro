@@ -39,6 +39,13 @@ const DEFAULT_BLOCKS: ProposalBlock[] = [
 export function IngestPhase() {
   const [blocks, setBlocks] = useState<ProposalBlock[]>(DEFAULT_BLOCKS);
 
+  const updateBlock = (id: string, markdown: string) => {
+    setBlocks((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, markdown } : b))
+    );
+  };
+
+
   return (
     <div className="flex-1 flex flex-col min-h-0">
       <div className="flex-1 overflow-y-auto px-8 py-6">
