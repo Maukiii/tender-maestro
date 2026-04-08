@@ -4,48 +4,36 @@ import { AiChatPane } from "@/components/AiChatPane";
 import { IngestPhase } from "@/components/IngestPhase";
 import { ProcessingPhase } from "@/components/ProcessingPhase";
 import { ReviewPhase } from "@/components/ReviewPhase";
-import {
-  fetchKnowledgeStats,
-  uploadTenderDocument,
-  analyzeTender,
-} from "@/lib/api";
-import type { KnowledgeStats } from "@/lib/api";
+import { DEFAULT_SECTIONS } from "@/lib/proposalData";
+import type { ProposalSection } from "@/lib/proposalData";
 
 type Phase = "ingest" | "processing" | "review";
 
 const Index = () => {
-  const [phase, setPhase] = useState<Phase>("ingest");
-  const [stats, setStats] = useState<KnowledgeStats>({
-    pastTenders: 0,
-    teamCVs: 0,
-    policyDocs: 0,
-    templateLibrary: 0,
-  });
-  const [statusText, setStatusText] = useState("Initializing...");
-  const [progress, setProgress] = useState(0);
-  const [draft, setDraft] = useState("");
+  const [phase] = useState<Phase>("ingest");
+  const [sections, setSections] = useState<ProposalSection[]>(DEFAULT_SECTIONS);
+  const [activeSectionId, setActiveSectionId] = useState(DEFAULT_SECTIONS[0].id);
 
-  useEffect(() => {
-    fetchKnowledgeStats().then(setStats);
-  }, []);
+  const activeSection = sections.find((s) => s.id === activeSectionId) ?? sections[0];
 
-  const handleAnalyze = useCallback(async (file: File) => {
-    setPhase("processing");
-
-    const { documentId } = await uploadTenderDocument(file);
-
-    const result = await analyzeTender(documentId, (status) => {
-      setStatusText(status.step);
-      setProgress(status.progress);
-    });
-
-    setDraft(result.markdown);
-    setPhase("review");
+  const handleUpdateBlock = useCallback((blockId: string, markdown: string) => {
+    setSections((prev) =>
+      prev.map((section) => ({
+        ...section,
+        blocks: section.blocks.map((b) =>
+          b.id === blockId ? { ...b, markdown } : b
+        ),
+      }))
+    );
   }, []);
 
   return (
     <div className="flex min-h-screen w-full">
-      <KnowledgeSidebar stats={stats} />
+      <KnowledgeSidebar
+        sections={sections}
+        activeSectionId={activeSectionId}
+        onSelect={setActiveSectionId}
+      />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
         {/* Top bar */}
@@ -53,26 +41,14 @@ const Index = () => {
           <h1 className="text-base font-semibold text-foreground">
             Tender Drafting Agent
           </h1>
-          {phase === "review" && (
-            <button
-              onClick={() => {
-                setPhase("ingest");
-                setDraft("");
-                setProgress(0);
-              }}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              ← New Tender
-            </button>
-          )}
         </header>
 
-        {phase === "ingest" && <IngestPhase />}
-        {phase === "processing" && (
-          <ProcessingPhase statusText={statusText} progress={progress} />
-        )}
-        {phase === "review" && (
-          <ReviewPhase draft={draft} onDraftUpdate={setDraft} />
+        {phase === "ingest" && (
+          <IngestPhase
+            blocks={activeSection.blocks}
+            sectionLabel={activeSection.label}
+            onUpdateBlock={handleUpdateBlock}
+          />
         )}
       </main>
 
