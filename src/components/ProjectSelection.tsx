@@ -119,6 +119,37 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
             </p>
           </div>
 
+          {/* Inline upload zone */}
+          <div
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onClick={() => fileInputRef.current?.click()}
+            className={`
+              flex items-center gap-4 p-5 rounded-xl border-2 border-dashed cursor-pointer transition-colors
+              ${isDraggingOver
+                ? "border-primary bg-primary/5"
+                : "border-border hover:border-primary/40 hover:bg-accent/50"
+              }
+            `}
+          >
+            <div className={`p-2.5 rounded-lg shrink-0 transition-colors ${isDraggingOver ? "bg-primary/10" : "bg-accent"}`}>
+              <Upload className={`h-5 w-5 transition-colors ${isDraggingOver ? "text-primary" : "text-muted-foreground"}`} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">Upload Tender Description</p>
+              <p className="text-xs text-muted-foreground">Drop a PDF or DOCX here, or click to browse</p>
+            </div>
+          </div>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.docx,.doc"
+            onChange={handleFileInputChange}
+            className="hidden"
+          />
+
           <div className="space-y-3">
             {MOCK_PROJECTS.map((project) => (
               <button
