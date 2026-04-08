@@ -5,10 +5,14 @@ import type { SelectionContext } from "@/components/AiChatPane";
 import { IngestPhase } from "@/components/IngestPhase";
 import { ProjectSelection } from "@/components/ProjectSelection";
 import { DEFAULT_SECTIONS } from "@/lib/proposalData";
-import type { ProposalSection } from "@/lib/proposalData";
+import type { ProposalSection, ProposalBlock } from "@/lib/proposalData";
 import { ArrowLeft } from "lucide-react";
+import { FileText } from "lucide-react";
 
 type View = "projects" | "editor";
+
+let idCounter = 0;
+const genId = (prefix: string) => `${prefix}-${Date.now()}-${++idCounter}`;
 
 const Index = () => {
   const [view, setView] = useState<View>("projects");
@@ -37,6 +41,26 @@ const Index = () => {
     el?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [scrollContainer]);
 
+  const handleAddSection = useCallback((label: string) => {
+    const newSection: ProposalSection = {
+      id: genId("section"),
+      label,
+      icon: FileText,
+      blocks: [{ id: genId("block"), title: "Untitled Block", markdown: "" }],
+    };
+    setSections((prev) => [...prev, newSection]);
+  }, []);
+
+  const handleAddBlock = useCallback((sectionId: string, title: string) => {
+    setSections((prev) =>
+      prev.map((section) =>
+        section.id === sectionId
+          ? { ...section, blocks: [...section.blocks, { id: genId("block"), title, markdown: "" }] }
+          : section
+      )
+    );
+  }, []);
+
   if (view === "projects") {
     return <ProjectSelection onSelect={() => setView("editor")} />;
   }
@@ -48,6 +72,8 @@ const Index = () => {
         activeSectionId={sections[0].id}
         onSelect={handleSidebarSelect}
         scrollContainer={scrollContainer}
+        onAddSection={handleAddSection}
+        onAddBlock={handleAddBlock}
       />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
@@ -72,7 +98,6 @@ const Index = () => {
           onTextSelect={handleTextSelect}
           onScrollContainerReady={setScrollContainer}
         />
-
       </main>
 
       <AiChatPane
