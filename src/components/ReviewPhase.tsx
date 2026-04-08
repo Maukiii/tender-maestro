@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { Send, Loader2, Bot, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { reviseDraft } from "@/lib/api";
+import { reviseDraft } from "@/api/tenderApi";
 
 interface ChatMessage {
   role: "user" | "agent";

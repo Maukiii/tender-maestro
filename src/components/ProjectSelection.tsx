@@ -2,14 +2,7 @@ import { useState, useCallback, useRef } from "react";
 import { FileText, Plus, Clock, ChevronRight, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export interface TenderProject {
-  id: string;
-  name: string;
-  client: string;
-  updatedAt: string;
-  sectionsCount: number;
-  status: "draft" | "submitted" | "in-review";
-}
+import type { TenderProject } from "@/types/tender";
 
 const MOCK_PROJECTS: TenderProject[] = [
   {

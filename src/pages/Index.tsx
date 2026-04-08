@@ -5,16 +5,15 @@ import type { SelectionContext } from "@/components/AiChatPane";
 import { IngestPhase } from "@/components/IngestPhase";
 import { ProjectSelection } from "@/components/ProjectSelection";
 import { DEFAULT_SECTIONS } from "@/lib/proposalData";
-import type { ProposalSection, ProposalBlock } from "@/lib/proposalData";
-import { ArrowLeft } from "lucide-react";
-import { FileText } from "lucide-react";
+import type { ProposalSection } from "@/lib/proposalData";
+import { ArrowLeft, FileText } from "lucide-react";
 
 type View = "projects" | "editor";
 
 let idCounter = 0;
 const genId = (prefix: string) => `${prefix}-${Date.now()}-${++idCounter}`;
 
-const Index = () => {
+export const Index = () => {
   const [view, setView] = useState<View>("projects");
   const [sections, setSections] = useState<ProposalSection[]>(DEFAULT_SECTIONS);
   const [selection, setSelection] = useState<SelectionContext | null>(null);
