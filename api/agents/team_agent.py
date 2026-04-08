@@ -22,6 +22,9 @@ Given the tender requirements and the team CVs from the company knowledge base, 
 the most suitable team members and write a concise block for each.
 Only use team members listed in the AVAILABLE TEAM section — do not invent people.
 
+Compare the "minimum_requirements_years_exp" field in the tender data with the `Experience` field in the CV. 
+If a member does not meet the required number of years, display a warning.
+
 Each block should contain:
 - A markdown table:  Name | Role | Days Allocated
 - 2-3 bullet points tailored to the specific tender (relevant skills, languages, past projects)
@@ -30,6 +33,8 @@ Rules:
 - Only assign team members whose skills match the tender's requirements.
 - Assign realistic day allocations based on the tender's duration and budget.
 - If a language requirement exists, ensure at least one team member covers it.
+- If there is no CV for a required role (as specified in Tender Section 6), you must not create a placeholder. 
+Mark the role as [MISSING RESOURCE] and provide a justification.
 
 Return a JSON object — no markdown fences, just pure JSON:
 {
