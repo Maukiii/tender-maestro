@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { KnowledgeSidebar } from "@/components/KnowledgeSidebar";
+import { AiChatPane } from "@/components/AiChatPane";
 import { IngestPhase } from "@/components/IngestPhase";
 import { ProcessingPhase } from "@/components/ProcessingPhase";
 import { ReviewPhase } from "@/components/ReviewPhase";
@@ -74,6 +75,8 @@ const Index = () => {
           <ReviewPhase draft={draft} onDraftUpdate={setDraft} />
         )}
       </main>
+
+      <AiChatPane />
     </div>
   );
 };
