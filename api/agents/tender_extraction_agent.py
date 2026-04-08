@@ -13,30 +13,70 @@ from pathlib import Path
 from services.ai import generate_text
 
 
-EXTRACTION_PROMPT = """Task: Extract structured information from the attached tender document and return it as a JSON object.
+EXTRACTION_PROMPT = """Serve as a Senior EU Procurement Specialist with expertise in analyzing European Commission (DG CNECT) tenders. Your task is to fully capture the attached text (“Tender Specifications”) and create a highly detailed, technically accurate summary in a valid JSON format.
 
-Requirements:
-- Create a valid JSON object with snake_case keys.
-- Extract all data points visible in the document.
-- Numbers as Number, Booleans as Boolean, lists as Array.
-- Output ONLY the JSON. No explanations, no markdown fences.
+IMPORTANT INSTRUCTIONS FOR DATA EXTRACTION:
+1. COMPLETENESS: Do not summarize lists loosely. Include all specific sub-items related to tasks, technical requirements, and minimum personnel requirements.
+2. THRESHOLD VALUES: Extract all hard numbers (minimum turnover, years of professional experience, deadlines in months, weighting in percent).
+3. TERMINOLOGY: Maintain official EU terminology (e.g., “Selection Criteria,” “Award Criteria,” “Deliverables,” “GPAI,” “AI Act Annex III”).
+4. NO AGGREGATION: If a document has a very large number of pages (70+), I expect dozens of entries in the JSON file’s arrays. Do not reduce complex sections to a single sentence.
 
-JSON schema (use null for fields not found in the document):
+STRUCTURE OF THE JSON OBJECT:
+The JSON must follow exactly the following hierarchy:
+
 {
-  "title": "tender/project title",
-  "client": "contracting authority name",
-  "reference": "tender reference number or null",
-  "deadline": "submission deadline as a string or null",
-  "budget_eur": budget as integer in EUR or null,
-  "duration_months": contract duration as integer or null,
-  "topic_areas": ["list of main topic / domain areas"],
-  "required_certifications": ["e.g. ISO 27001"] or [],
-  "required_languages": ["EN", "DE", ...],
-  "requires_primary_fieldwork": true or false,
-  "key_requirements": ["bullet list of main technical / methodological requirements"],
-  "evaluation_criteria": ["list of award criteria if stated"] or [],
-  "summary": "2-3 sentence plain-language summary of what is being procured"
-}"""
+  “tender_metadata”: {
+    “title”: “”,
+    “reference_number”: “”,
+    “contracting_authority”: “”,
+    “estimated_value_euro”: 0,
+    “max_duration_months”: 0,
+    “procedure_type”: “”,
+    “submission_deadline”: “”
+  },
+  “strategic_context”: {
+    “background_and_policy_context”: “”,
+    “core_objectives”: []
+  },
+  “operational_scope”: {
+    “tasks”: [
+       { “task_id”: “”, “title”: “”, “detailed_description”: ‘’, “sub_tasks”: [] }
+    ],
+    “technical_methodology_requirements”: []
+  },
+  “deliverables”: [
+    { “id”: “”, “title”: “”, “description”: “”, “delivery_month”: “”, ‘frequency’: “” }
+  ],
+  “resource_requirements”: {
+    “team_profiles”: [
+      { “role”: “”, ‘minimum_requirements_years_exp’: 0, “specific_expertise_required”: [] }
+    ],
+    “subcontracting_rules”: “”
+  },
+  “compliance_and_selection”: {
+    “financial_economic_capacity”: { “min_turnover_required”: 0, ‘other_requirements’: “” },
+    “technical_professional_capacity”: { “reference_projects_required”: 0, ‘reference_details’: “” }
+  },
+  “evaluation_logic”: {
+    “quality_price_ratio”: “”,
+    “technical_award_criteria”: [
+       { “criterion”: “”, “max_points”: 0, “weight”: “”, ‘detailed_evaluation_logic’: “” }
+    ],
+    “price_weight”: “”
+  },
+  “submission_logistics”: {
+    “required_documents”: [],
+    “page_limits”: { ‘technical_offer’: 0, “total_annexes”: 0 },
+    “submission_platform”: “”
+  }
+}
+
+OUTPUT RULES:
+- Respond ONLY with the JSON string.
+- No introduction (“Here is the summary...”).
+- No Markdown code blocks (no backticks ```).
+- Ensure that the JSON is valid and all special characters are correctly escaped.
+- Parse the document step by step to avoid overlooking information in the middle and at the end of the document."""
 
 
 async def run_tender_extractor_agent(file_path: Path) -> dict:
