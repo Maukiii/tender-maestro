@@ -72,7 +72,7 @@ const Index = () => {
           onTextSelect={handleTextSelect}
           onScrollContainerReady={setScrollContainer}
         />
-        )}
+
       </main>
 
       <AiChatPane
