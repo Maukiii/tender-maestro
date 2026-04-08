@@ -51,6 +51,17 @@ export interface TenderProject {
   status: "draft" | "submitted" | "in-review";
 }
 
+export interface IncomingTender {
+  id: string;
+  title: string;
+  client: string;
+  deadline: string;
+  budgetRange: string;
+  matchScore: number; // 0-100
+  matchReasons: string[];
+  uploadedAt: string;
+}
+
 export interface GenerateSectionRequest {
   sectionLabel: string;
   tenderContext?: string;
