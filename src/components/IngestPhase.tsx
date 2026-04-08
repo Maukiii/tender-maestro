@@ -9,9 +9,10 @@ interface IngestPhaseProps {
   sections: ProposalSection[];
   onUpdateBlock: (blockId: string, markdown: string) => void;
   onTextSelect: (text: string, blockTitle: string) => void;
+  onScrollContainerReady?: (el: HTMLElement) => void;
 }
 
-export function IngestPhase({ sections, onUpdateBlock, onTextSelect }: IngestPhaseProps) {
+export function IngestPhase({ sections, onUpdateBlock, onTextSelect, onScrollContainerReady }: IngestPhaseProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
