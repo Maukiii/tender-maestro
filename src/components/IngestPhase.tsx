@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { GripVertical, Pencil, Eye } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import type { ProposalBlock } from "@/lib/proposalData";
 
 interface IngestPhaseProps {
