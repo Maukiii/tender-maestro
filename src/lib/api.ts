@@ -52,6 +52,7 @@ export interface RevisionResult {
 export interface SelectionContext {
   text: string;
   blockTitle?: string;
+  blockId?: string;
   sectionLabel?: string;
 }
 

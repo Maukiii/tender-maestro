@@ -8,7 +8,7 @@ import type { ProposalSection } from "@/lib/proposalData";
 interface IngestPhaseProps {
   sections: ProposalSection[];
   onUpdateBlock: (blockId: string, markdown: string) => void;
-  onTextSelect: (text: string, blockTitle: string) => void;
+  onTextSelect: (text: string, blockTitle: string, blockId: string) => void;
   onSectionReference: (sectionId: string) => void;
   onScrollContainerReady?: (el: HTMLElement) => void;
 }
@@ -18,13 +18,13 @@ export function IngestPhase({ sections, onUpdateBlock, onTextSelect, onSectionRe
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const handleMouseUp = useCallback(
-    (blockTitle: string) => {
+    (blockTitle: string, blockId: string) => {
       // Use a short timeout so the selection is finalized before we read it
       setTimeout(() => {
         const sel = window.getSelection();
         const text = sel?.toString().trim();
         if (text && text.length > 0) {
-          onTextSelect(text, blockTitle);
+          onTextSelect(text, blockTitle, blockId);
         }
       }, 10);
     },
@@ -104,7 +104,7 @@ export function IngestPhase({ sections, onUpdateBlock, onTextSelect, onSectionRe
                             autoFocus
                             value={block.markdown}
                             onChange={(e) => onUpdateBlock(block.id, e.target.value)}
-                            onMouseUp={() => handleMouseUp(block.title)}
+                            onMouseUp={() => handleMouseUp(block.title, block.id)}
                             placeholder={`Write ${block.title.toLowerCase()} content…`}
                             className="min-h-[120px] resize-y border-none bg-muted/30 text-sm leading-relaxed font-mono focus-visible:ring-1 focus-visible:ring-primary/30"
                           />
@@ -121,7 +121,7 @@ export function IngestPhase({ sections, onUpdateBlock, onTextSelect, onSectionRe
                                 setEditingId(block.id);
                               }
                             }}
-                            onMouseUp={() => handleMouseUp(block.title)}
+                            onMouseUp={() => handleMouseUp(block.title, block.id)}
                             className="prose prose-sm max-w-none text-foreground
                               prose-headings:text-foreground prose-strong:text-foreground prose-a:text-primary
                               prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-p:my-1"

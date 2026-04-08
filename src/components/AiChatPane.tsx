@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, SendHorizonal, X, Quote, Layers } from "lucide-react";
+import { Bot, SendHorizonal, X, Quote, Layers, PenLine, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { streamChat } from "@/lib/api";
@@ -8,6 +8,7 @@ import type { SelectionContext as ApiContext, ChatMessage as ApiChatMessage } fr
 export interface SelectionContext {
   text: string;
   blockTitle: string;
+  blockId?: string;
   /** When set, this references an entire section rather than selected text */
   sectionLabel?: string;
 }
@@ -15,6 +16,7 @@ export interface SelectionContext {
 interface AiChatPaneProps {
   selection: SelectionContext | null;
   onClearSelection: () => void;
+  onApplyToBlock: (blockId: string, aiResponse: string, selectionText: string) => void;
 }
 
 interface ChatMessage {
@@ -22,12 +24,15 @@ interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   streaming?: boolean;
+  /** Context snapshot captured when this assistant message was generated */
+  contextSnapshot?: SelectionContext | null;
 }
 
-export function AiChatPane({ selection, onClearSelection }: AiChatPaneProps) {
+export function AiChatPane({ selection, onClearSelection, onApplyToBlock }: AiChatPaneProps) {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -46,6 +51,7 @@ export function AiChatPane({ selection, onClearSelection }: AiChatPaneProps) {
       content: m.content,
     }));
 
+    // blockId is frontend-only — strip it before sending to the API
     const context: ApiContext | undefined = selection
       ? {
           text: selection.text,
@@ -53,6 +59,9 @@ export function AiChatPane({ selection, onClearSelection }: AiChatPaneProps) {
           sectionLabel: selection.sectionLabel,
         }
       : undefined;
+
+    // Snapshot the current selection so the assistant message knows what to apply to
+    const contextSnapshot = selection ? { ...selection } : null;
 
     setMessages((prev) => [
       ...prev,
@@ -62,7 +71,7 @@ export function AiChatPane({ selection, onClearSelection }: AiChatPaneProps) {
     const assistantId = crypto.randomUUID();
     setMessages((prev) => [
       ...prev,
-      { id: assistantId, role: "assistant", content: "", streaming: true },
+      { id: assistantId, role: "assistant", content: "", streaming: true, contextSnapshot },
     ]);
     setIsStreaming(true);
 
@@ -87,6 +96,13 @@ export function AiChatPane({ selection, onClearSelection }: AiChatPaneProps) {
       );
       setIsStreaming(false);
     }
+  };
+
+  const handleApply = (msg: ChatMessage) => {
+    const ctx = msg.contextSnapshot;
+    if (!ctx?.blockId || !msg.content) return;
+    onApplyToBlock(ctx.blockId, msg.content, ctx.text);
+    setAppliedIds((prev) => new Set(prev).add(msg.id));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -115,47 +131,85 @@ export function AiChatPane({ selection, onClearSelection }: AiChatPaneProps) {
             </div>
             <p className="text-sm font-medium text-foreground">How can I help?</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Ask anything about your proposal, or select text in the document for more context.
+              Select text in a block, then ask me to rewrite or improve it — I'll offer to apply my response directly.
             </p>
           </div>
         ) : (
-          messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-            >
-              {msg.role === "assistant" && (
-                <div className="shrink-0 w-6 h-6 rounded-full bg-accent flex items-center justify-center mt-0.5">
-                  <Bot className="h-3.5 w-3.5 text-accent-foreground" />
+          messages.map((msg) => {
+            const canApply =
+              msg.role === "assistant" &&
+              !msg.streaming &&
+              !!msg.content &&
+              !!msg.contextSnapshot?.blockId;
+            const wasApplied = appliedIds.has(msg.id);
+
+            return (
+              <div key={msg.id} className="flex flex-col gap-1">
+                <div
+                  className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  {msg.role === "assistant" && (
+                    <div className="shrink-0 w-6 h-6 rounded-full bg-accent flex items-center justify-center mt-0.5">
+                      <Bot className="h-3.5 w-3.5 text-accent-foreground" />
+                    </div>
+                  )}
+                  <div
+                    className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                      msg.role === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-accent text-accent-foreground"
+                    }`}
+                  >
+                    {msg.role === "assistant" ? (
+                      msg.content ? (
+                        <div className="prose prose-sm max-w-none dark:prose-invert [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 prose-p:my-1 prose-headings:my-1">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {msg.content}
+                          </ReactMarkdown>
+                        </div>
+                      ) : msg.streaming ? (
+                        <div className="flex gap-1 items-center h-4">
+                          <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce [animation-delay:-0.3s]" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce [animation-delay:-0.15s]" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce" />
+                        </div>
+                      ) : null
+                    ) : (
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                    )}
+                  </div>
                 </div>
-              )}
-              <div
-                className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
-                  msg.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-accent text-accent-foreground"
-                }`}
-              >
-                {msg.role === "assistant" ? (
-                  msg.content ? (
-                    <div className="prose prose-sm max-w-none dark:prose-invert [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 prose-p:my-1 prose-headings:my-1">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {msg.content}
-                      </ReactMarkdown>
-                    </div>
-                  ) : msg.streaming ? (
-                    <div className="flex gap-1 items-center h-4">
-                      <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce [animation-delay:-0.3s]" />
-                      <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce [animation-delay:-0.15s]" />
-                      <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce" />
-                    </div>
-                  ) : null
-                ) : (
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
+
+                {/* Apply to block button */}
+                {canApply && (
+                  <div className="flex justify-start ml-8">
+                    <button
+                      type="button"
+                      onClick={() => handleApply(msg)}
+                      disabled={wasApplied}
+                      className={`flex items-center gap-1.5 text-xs rounded-md px-2.5 py-1 transition-colors border ${
+                        wasApplied
+                          ? "text-green-600 border-green-300 bg-green-50 dark:text-green-400 dark:border-green-700 dark:bg-green-950/30 cursor-default"
+                          : "text-primary border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/60"
+                      }`}
+                    >
+                      {wasApplied ? (
+                        <>
+                          <Check className="h-3 w-3" />
+                          Applied
+                        </>
+                      ) : (
+                        <>
+                          <PenLine className="h-3 w-3" />
+                          Apply to block
+                        </>
+                      )}
+                    </button>
+                  </div>
                 )}
               </div>
-            </div>
-          ))
+            );
+          })
         )}
         <div ref={messagesEndRef} />
       </div>

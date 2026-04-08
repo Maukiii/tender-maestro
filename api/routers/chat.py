@@ -19,7 +19,11 @@ async def stream_chat(request: ChatRequest):
     """
     system = (
         "You are an AI assistant helping to write and improve a tender proposal. "
-        "Be concise, practical, and focused on improving the proposal. "
+        "When the user provides selected content (marked with <selected_content>), "
+        "apply their instruction directly to that content. "
+        "If the instruction is to edit, rewrite, shorten, improve, or modify the content, "
+        "output ONLY the revised markdown — no preamble, no explanation. "
+        "If the instruction is a question or discussion, answer concisely. "
         "Use markdown for formatting."
     )
 
@@ -27,11 +31,12 @@ async def stream_chat(request: ChatRequest):
     context_part = ""
     if request.context:
         ctx = request.context
-        label = ctx.sectionLabel or ctx.blockTitle or ""
-        if label:
-            context_part = f"\n\n[Context — {label}]\n{ctx.text}"
-        elif ctx.text:
-            context_part = f"\n\n[Selected text]\n{ctx.text}"
+        label = ctx.sectionLabel or ctx.blockTitle or "selected text"
+        context_part = (
+            f"\n\n<selected_content label=\"{label}\">\n"
+            f"{ctx.text}\n"
+            f"</selected_content>"
+        )
 
     # Build message history
     messages: list[dict] = [

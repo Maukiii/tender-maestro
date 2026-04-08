@@ -31,8 +31,8 @@ export const Index = () => {
     );
   }, []);
 
-  const handleTextSelect = useCallback((text: string, blockTitle: string) => {
-    setSelection({ text, blockTitle });
+  const handleTextSelect = useCallback((text: string, blockTitle: string, blockId: string) => {
+    setSelection({ text, blockTitle, blockId });
   }, []);
 
   const handleSectionReference = useCallback((sectionId: string) => {
@@ -66,6 +66,23 @@ export const Index = () => {
         : [{ id: genId("block"), title: "Untitled Block", markdown: "" }],
     };
     setSections((prev) => [...prev, newSection]);
+  }, []);
+
+  const handleApplyToBlock = useCallback((blockId: string, aiResponse: string, selectionText: string) => {
+    setSections((prev) =>
+      prev.map((section) => ({
+        ...section,
+        blocks: section.blocks.map((b) => {
+          if (b.id !== blockId) return b;
+          // Partial replacement when selected text is found literally in the markdown
+          if (selectionText && b.markdown.includes(selectionText)) {
+            return { ...b, markdown: b.markdown.replace(selectionText, aiResponse) };
+          }
+          // Full block replacement
+          return { ...b, markdown: aiResponse };
+        }),
+      }))
+    );
   }, []);
 
   const handleAddBlock = useCallback((sectionId: string, title: string) => {
@@ -121,6 +138,7 @@ export const Index = () => {
       <AiChatPane
         selection={selection}
         onClearSelection={() => setSelection(null)}
+        onApplyToBlock={handleApplyToBlock}
       />
     </div>
   );
