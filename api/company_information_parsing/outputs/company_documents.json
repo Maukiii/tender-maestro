@@ -1,0 +1,332 @@
+[
+  {
+    "basic_info": {
+      "legal_name": "Meridian Intelligence GmbH",
+      "founded": 2016,
+      "headquarters": "Berlin, Germany",
+      "legal_form": "GmbH",
+      "VAT_number": "DE298473610",
+      "employees": 35,
+      "annual_turnover": {
+        "2024": 4200000,
+        "2023": 3800000,
+        "2022": 3100000
+      },
+      "website": "meridian-intelligence.eu",
+      "ISO_certifications": [
+        "ISO 9001"
+      ],
+      "GDPR_compliance": true
+    },
+    "company_profile": {
+      "company_profile_text": "\n\nWho We Are\nMeridian Intelligence GmbH is a Berlin-based research and data analytics consultancy specialising in market intelligence for EU institutional clients and large-scale private sector organisations. We help clients understand complex, fragmented markets — identifying who the relevant actors are, how they are distributed, how markets are evolving, and what the evidence base is for regulatory or strategic decisions.\nWe combine proprietary web-based data infrastructure with rigorous research methodology to produce market intelligence that goes beyond what commercial databases can provide. Our work is particularly suited to niche and fragmented markets where standard classification systems fail to capture the relevant population — sectors like cybersecurity, data services, AI, digital media, fintech, and advanced manufacturing.\nSince 2016, we have delivered more than 40 completed projects for EU institutional clients, with a cumulative dataset volume exceeding 80 million organisational web records processed.\n\nOur Services\nMarket and Ecosystem Mapping\nWe identify and profile all relevant organisations in a defined market — including actors that are invisible to standard databases because they are small, niche, or not self-labelled. Our mapping methodology combines large-scale web data collection, automated classification, and manual verification to produce structured, machine-readable entity datasets with full indicator profiles.\nContinuous Market Monitoring\nWe maintain live monitoring capabilities for client-defined markets, delivering structured updates on new entrants, exits, portfolio changes, and ecosystem shifts. Update cadences range from weekly (for fast-moving markets) to quarterly (for stable sectors). All updates include structured change logs.\nRegulatory and Policy Research\nWe support EU institutions and member state bodies in translating regulatory frameworks into empirical analytical scopes. This includes defining which entities fall within a regulation's coverage, operationalising legal definitions as classification criteria, and producing the evidence base for impact assessments and policy evaluations.\nSupply Chain and Network Analysis\nWe map relationships between organisations in a defined ecosystem — supplier-customer relationships, subcontracting chains, ownership networks, and collaboration links. Our supply chain analysis is derived from web evidence and procurement data rather than self-reported survey responses.\n\nOur Approach\nThe core of Meridian's methodology is what we call evidence-based organisation profiling: the systematic identification and classification of organisations using observable, verifiable signals rather than self-reported classifications or generic keyword matching.\n\nWe start with the broadest possible universe of candidates — typically all organisations with a web presence in the relevant geography.\nWe then apply a cascade of classification filters, each requiring a specific type of hard evidence to retain a candidate in scope.\nWe run automated quality checks and a manual verification pass on a statistical sample of each delivered dataset.\nWe track and publish our false-positive rate, coverage rate, and validation statistics with every major deliverable.\n\nThis approach consistently outperforms database-lookup methods in markets where the relevant actors are not centrally registered or do not self-identify with standard industry labels — which is the case in the majority of our clients' markets of interest.\n\nSelected Clients\n\nKey Facts for Tender Submissions",
+      "services": [
+        "Market and Ecosystem Mapping",
+        "Continuous Market Monitoring",
+        "Regulatory and Policy Research",
+        "Supply Chain and Network Analysis"
+      ],
+      "approach": "Evidence-based organisation profiling using observable, verifiable signals"
+    },
+    "capabilities": {
+      "capabilities_list": [
+        {
+          "name": "Continuous monitoring",
+          "description": ""
+        },
+        {
+          "name": "Supply chain mapping",
+          "description": ""
+        },
+        {
+          "name": "Regulatory scoping",
+          "description": ""
+        },
+        {
+          "name": "API delivery",
+          "description": ""
+        }
+      ],
+      "methodology": "WebMap five-stage pipeline",
+      "technology_stack": {
+        "data_collection": [
+          "Scrapy",
+          "Playwright",
+          "boto3 (S3)"
+        ],
+        "nlp_classification": [
+          "spaCy",
+          "scikit-learn",
+          "sentence-transformers",
+          "fine-tuned\nBERT classifiers"
+        ],
+        "orchestration": [
+          "Apache Airflow"
+        ],
+        "storage": [
+          "PostgreSQL",
+          "Elasticsearch",
+          "S3"
+        ],
+        "delivery": [
+          "Near-real-time indicator access via REST API;\nstructured JSON/CSV/Parquet delivery; custom data\ndictionaries\nAvailable on request for ongoing contracts\nOur Methodology: WebMap\nWebMap is Meridian's proprietary five-stage pipeline for large-scale organisational profiling. It differs from\ndatabase-lookup approaches in one fundamental respect: entities are included only if verifiable evidence\nsupports their relevance. We do not infer relevance from NACE codes or generic keywords.\nStage\nWhat happens\n\n1 — Seed universe\nIngest from company registries (Tier 1) + proprietary web index (Tier 2) + sector registries (Tier 3). EU27\ncoverage starting from 2–12M candidates.\n2 — Deduplication\nVAT-number matching → fuzzy name matching (Jaro-Winkler ≥ 0.92) → domain-level consolidation.\nDuplicate rate post-dedup: <1.5%.\n3 — Web data\ncollection\nCrawl primary web domain. Extract text from About",
+          "Products",
+          "Services",
+          "Team pages. Archive with\ntimestamp.\n4 — Evidence\nclassification\nNLP-based classifier scores each candidate against scope criteria. Hard evidence required for inclusion.\nReject rate: typically 85–95% of seed universe.\n5 — Verification &\nprofiling\nManual spot-check (5% random sample). Derive structured indicator profiles. False-positive rate in final\ndelivery: <3%.\nTechnology\nLayer\nStack\nData collection\nScrapy",
+          "Playwright",
+          "boto3 (S3)\nNLP & classification\nspaCy",
+          "scikit-learn",
+          "sentence-transformers",
+          "fine-tuned\nBERT classifiers\nEntity resolution\ndedupe library + custom Jaro-Winkler\nPipeline orchestration\nApache Airflow\nStorage & query\nPostgreSQL",
+          "Elasticsearch",
+          "S3\nDelivery\nJSON",
+          "CSV",
+          "Parquet; REST API on request"
+        ]
+      }
+    },
+    "projects": [
+      {
+        "project_name": "Cybersecurity SME Landscape in the EU: Market Mapping and Supply Chain Analysis",
+        "client": "ENISA",
+        "value_EUR": 480000,
+        "duration": "18 months\n(2023–2024)",
+        "role": "Prime contractor",
+        "lead_researchers": [
+          "Dr. A. Becker",
+          "T. Vogel"
+        ],
+        "key_deliverables": [
+          "Entity dataset: 14,200+ verified cybersecurity-relevant SMEs across EU27",
+          "Supply chain relationship map for 8 CRA product categories",
+          "4 quarterly monitoring updates",
+          "Final report with policy recommendations"
+        ],
+        "status": "Completed"
+      },
+      {
+        "project_name": "European Data Economy Monitoring Tool — Phase III Update",
+        "client": "European Commission JRC",
+        "value_EUR": 620000,
+        "duration": "24 months\n(2024–2026)",
+        "role": "Prime contractor",
+        "lead_researchers": [
+          "Dr. A. Becker",
+          "T. Vogel",
+          "S. Chen"
+        ],
+        "key_deliverables": [
+          "Redesigned web-based indicator methodology",
+          "Quarterly dataset updates (JSON + CSV)",
+          "API wrapper for near-real-time indicator access",
+          "Annual trend report (Year 1 delivered)"
+        ],
+        "status": "Ongoing"
+      },
+      {
+        "project_name": "FinTech and Digital Finance Market Analysis: Third-Party ICT Providers under DORA",
+        "client": "European Banking Authority",
+        "value_EUR": 290000,
+        "duration": "12 months\n(2024–2025)",
+        "role": "Prime contractor",
+        "lead_researchers": [
+          "S. Chen",
+          "Dr. A. Becker"
+        ],
+        "key_deliverables": [
+          "Entity typology for DORA-relevant ICT providers",
+          "Population dataset: 6,400+ entities with indicator profiles",
+          "Sector concentration analysis",
+          "Policy brief for EBA supervisory teams"
+        ],
+        "status": "Completed"
+      },
+      {
+        "project_name": "Mapping the EU Industrial Deep Tech Ecosystem: Robotics, Advanced Materials, and Photonics",
+        "client": "European Commission DG GROW",
+        "value_EUR": 410000,
+        "duration": "20 months\n(2022–2024)",
+        "role": "Prime contractor",
+        "lead_researchers": [
+          "Dr. A. Becker",
+          "T. Vogel"
+        ],
+        "key_deliverables": [
+          "Three sector-specific entity datasets (combined: 9,800+ organisations)",
+          "Supply chain and IP linkage analysis",
+          "Longitudinal trend comparison (2019 vs 2022)",
+          "Interactive dashboard prototype"
+        ],
+        "status": "Completed"
+      },
+      {
+        "project_name": "European Media Market Monitoring: News Publishers, Platforms, and Regulatory Compliance",
+        "client": "European Commission DG CNECT",
+        "value_EUR": 350000,
+        "duration": "18 months\n(2023–2024)",
+        "role": "Prime contractor",
+        "lead_researchers": [
+          "S. Chen",
+          "Dr. A. Becker"
+        ],
+        "key_deliverables": [
+          "Population map of EU news publishers and media services (11,000+ entities)",
+          "Platform dependency analysis per DSA/EMFA scope",
+          "Country-level regulatory compliance readiness assessment",
+          "Quarterly monitoring updates"
+        ],
+        "status": "Completed"
+      },
+      {
+        "project_name": "Mapping Germany's AI Startup Landscape: Founders, Investors, and Sectoral Deployment",
+        "client": "Federal Ministry for Economic Affairs (BMWi)",
+        "value_EUR": 180000,
+        "duration": "12 months\n(2021–2022)",
+        "role": "Prime contractor",
+        "lead_researchers": [
+          "Dr. A. Becker",
+          "T. Vogel"
+        ],
+        "key_deliverables": [
+          "Database of 1,400+ German AI startups with founding year, funding stage, sector",
+          "Investor network analysis",
+          "Policy brief for BMWK AI strategy team"
+        ],
+        "status": "Completed"
+      }
+    ],
+    "team_members": [
+      {
+        "name": "Dr. Anna Becker",
+        "role": "Managing Director / Project Lead",
+        "seniority": "Principal",
+        "skills": {
+          "Market Mapping": "Expert",
+          "Data Engineering": "Intermediate",
+          "NLP/ML": "Basic",
+          "Policy Analysis": "Expert",
+          "Stakeholder Management": "Expert"
+        },
+        "availability_days_per_month": 12
+      },
+      {
+        "name": "Thomas Vogel",
+        "role": "Senior Data Engineer",
+        "seniority": "Senior",
+        "skills": {
+          "Market Mapping": "Intermediate",
+          "Data Engineering": "Expert",
+          "NLP/ML": "Advanced",
+          "Policy Analysis": "Basic",
+          "Stakeholder Management": "Basic"
+        },
+        "availability_days_per_month": 18
+      },
+      {
+        "name": "Sofia Chen",
+        "role": "Policy & Regulatory Research Lead",
+        "seniority": "Senior",
+        "skills": {
+          "Market Mapping": "Advanced",
+          "Data Engineering": "Basic",
+          "NLP/ML": "Basic",
+          "Policy Analysis": "Expert",
+          "Stakeholder Management": "Advanced"
+        },
+        "availability_days_per_month": 16
+      },
+      {
+        "name": "Marcus Weber",
+        "role": "Data Scientist",
+        "seniority": "Mid",
+        "skills": {
+          "Market Mapping": "Intermediate",
+          "Data Engineering": "Advanced",
+          "NLP/ML": "Expert",
+          "Policy Analysis": "Basic",
+          "Stakeholder Management": "Basic"
+        },
+        "availability_days_per_month": 20
+      },
+      {
+        "name": "Julia Schneider",
+        "role": "Research Analyst",
+        "seniority": "Junior",
+        "skills": {
+          "Market Mapping": "Advanced",
+          "Data Engineering": "Intermediate",
+          "NLP/ML": "Basic",
+          "Policy Analysis": "Advanced",
+          "Stakeholder Management": "Intermediate"
+        },
+        "availability_days_per_month": 20
+      },
+      {
+        "name": "Andrei Popescu",
+        "role": "Junior Data Engineer",
+        "seniority": "Junior",
+        "skills": {
+          "Market Mapping": "Basic",
+          "Data Engineering": "Advanced",
+          "NLP/ML": "Intermediate",
+          "Policy Analysis": "Basic",
+          "Stakeholder Management": "Basic"
+        },
+        "availability_days_per_month": 22
+      }
+    ],
+    "reference_contacts": [
+      {
+        "project_reference": "ENISA/2023/OP/0008",
+        "client_organisation": "ENISA",
+        "contact_name": "Dr. Klaus Müller",
+        "contact_title": "Head of Unit, Market Analysis",
+        "email": "k.mueller@enisa.europa.eu",
+        "relationship": "Prime contractor"
+      },
+      {
+        "project_reference": "JRC/2024/OP/0019",
+        "client_organisation": "European Commission JRC",
+        "contact_name": "Dr. Marie Leclerc",
+        "contact_title": "Senior Researcher, Digital Economy",
+        "email": "marie.leclerc@ec.europa.eu",
+        "relationship": "Prime contractor"
+      },
+      {
+        "project_reference": "EBA/2024/OP/0003",
+        "client_organisation": "European Banking Authority",
+        "contact_name": "Robert Janssen",
+        "contact_title": "Policy Advisor, Digital Finance",
+        "email": "r.janssen@eba.europa.eu",
+        "relationship": "Prime contractor"
+      },
+      {
+        "project_reference": "DG GROW/2022/OP/0011",
+        "client_organisation": "European Commission DG GROW",
+        "contact_name": "Isabelle Fontaine",
+        "contact_title": "Project Manager, Industrial Strategy",
+        "email": "isabelle.fontaine@ec.europa.eu",
+        "relationship": "Prime contractor"
+      },
+      {
+        "project_reference": "Fraunhofer ISI sub.",
+        "client_organisation": "Fraunhofer ISI",
+        "contact_name": "Prof. Dr. Stefan Rammer",
+        "contact_title": "Head of Department, Innovation Economics",
+        "email": "s.rammer@isi.fraunhofer.de",
+        "relationship": "Subcontractor"
+      }
+    ],
+    "key_facts": {
+      "CPV_codes": [
+        "79300000",
+        "72316000",
+        "73200000"
+      ],
+      "NUTS_code": "",
+      "NACE_code": "",
+      "authorized_signatory": "Dr. Anna Becker",
+      "bank_details": ""
+    }
+  }
+]

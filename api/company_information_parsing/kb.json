@@ -1,0 +1,614 @@
+{
+  "company_documents": [
+    {
+      "basic_info": {
+        "legal_name": "Meridian Intelligence GmbH",
+        "founded": 2016,
+        "headquarters": "Berlin, Germany",
+        "legal_form": "GmbH",
+        "VAT_number": "DE298473610",
+        "employees": 35,
+        "annual_turnover": {
+          "2024": 4200000,
+          "2023": 3800000,
+          "2022": 3100000
+        },
+        "website": "meridian-intelligence.eu",
+        "ISO_certifications": [
+          "ISO 9001"
+        ],
+        "GDPR_compliance": true
+      },
+      "company_profile": {
+        "company_profile_text": "\n\nWho We Are\nMeridian Intelligence GmbH is a Berlin-based research and data analytics consultancy specialising in market intelligence for EU institutional clients and large-scale private sector organisations. We help clients understand complex, fragmented markets — identifying who the relevant actors are, how they are distributed, how markets are evolving, and what the evidence base is for regulatory or strategic decisions.\nWe combine proprietary web-based data infrastructure with rigorous research methodology to produce market intelligence that goes beyond what commercial databases can provide. Our work is particularly suited to niche and fragmented markets where standard classification systems fail to capture the relevant population — sectors like cybersecurity, data services, AI, digital media, fintech, and advanced manufacturing.\nSince 2016, we have delivered more than 40 completed projects for EU institutional clients, with a cumulative dataset volume exceeding 80 million organisational web records processed.\n\nOur Services\nMarket and Ecosystem Mapping\nWe identify and profile all relevant organisations in a defined market — including actors that are invisible to standard databases because they are small, niche, or not self-labelled. Our mapping methodology combines large-scale web data collection, automated classification, and manual verification to produce structured, machine-readable entity datasets with full indicator profiles.\nContinuous Market Monitoring\nWe maintain live monitoring capabilities for client-defined markets, delivering structured updates on new entrants, exits, portfolio changes, and ecosystem shifts. Update cadences range from weekly (for fast-moving markets) to quarterly (for stable sectors). All updates include structured change logs.\nRegulatory and Policy Research\nWe support EU institutions and member state bodies in translating regulatory frameworks into empirical analytical scopes. This includes defining which entities fall within a regulation's coverage, operationalising legal definitions as classification criteria, and producing the evidence base for impact assessments and policy evaluations.\nSupply Chain and Network Analysis\nWe map relationships between organisations in a defined ecosystem — supplier-customer relationships, subcontracting chains, ownership networks, and collaboration links. Our supply chain analysis is derived from web evidence and procurement data rather than self-reported survey responses.\n\nOur Approach\nThe core of Meridian's methodology is what we call evidence-based organisation profiling: the systematic identification and classification of organisations using observable, verifiable signals rather than self-reported classifications or generic keyword matching.\n\nWe start with the broadest possible universe of candidates — typically all organisations with a web presence in the relevant geography.\nWe then apply a cascade of classification filters, each requiring a specific type of hard evidence to retain a candidate in scope.\nWe run automated quality checks and a manual verification pass on a statistical sample of each delivered dataset.\nWe track and publish our false-positive rate, coverage rate, and validation statistics with every major deliverable.\n\nThis approach consistently outperforms database-lookup methods in markets where the relevant actors are not centrally registered or do not self-identify with standard industry labels — which is the case in the majority of our clients' markets of interest.\n\nSelected Clients\n\nKey Facts for Tender Submissions",
+        "services": [
+          "Market and Ecosystem Mapping",
+          "Continuous Market Monitoring",
+          "Regulatory and Policy Research",
+          "Supply Chain and Network Analysis"
+        ],
+        "approach": "Evidence-based organisation profiling using observable, verifiable signals"
+      },
+      "capabilities": {
+        "capabilities_list": [
+          {
+            "name": "Continuous monitoring",
+            "description": ""
+          },
+          {
+            "name": "Supply chain mapping",
+            "description": ""
+          },
+          {
+            "name": "Regulatory scoping",
+            "description": ""
+          },
+          {
+            "name": "API delivery",
+            "description": ""
+          }
+        ],
+        "methodology": "WebMap five-stage pipeline",
+        "technology_stack": {
+          "data_collection": [
+            "Scrapy",
+            "Playwright",
+            "boto3 (S3)"
+          ],
+          "nlp_classification": [
+            "spaCy",
+            "scikit-learn",
+            "sentence-transformers",
+            "fine-tuned\nBERT classifiers"
+          ],
+          "orchestration": [
+            "Apache Airflow"
+          ],
+          "storage": [
+            "PostgreSQL",
+            "Elasticsearch",
+            "S3"
+          ],
+          "delivery": [
+            "Near-real-time indicator access via REST API;\nstructured JSON/CSV/Parquet delivery; custom data\ndictionaries\nAvailable on request for ongoing contracts\nOur Methodology: WebMap\nWebMap is Meridian's proprietary five-stage pipeline for large-scale organisational profiling. It differs from\ndatabase-lookup approaches in one fundamental respect: entities are included only if verifiable evidence\nsupports their relevance. We do not infer relevance from NACE codes or generic keywords.\nStage\nWhat happens\n\n1 — Seed universe\nIngest from company registries (Tier 1) + proprietary web index (Tier 2) + sector registries (Tier 3). EU27\ncoverage starting from 2–12M candidates.\n2 — Deduplication\nVAT-number matching → fuzzy name matching (Jaro-Winkler ≥ 0.92) → domain-level consolidation.\nDuplicate rate post-dedup: <1.5%.\n3 — Web data\ncollection\nCrawl primary web domain. Extract text from About",
+            "Products",
+            "Services",
+            "Team pages. Archive with\ntimestamp.\n4 — Evidence\nclassification\nNLP-based classifier scores each candidate against scope criteria. Hard evidence required for inclusion.\nReject rate: typically 85–95% of seed universe.\n5 — Verification &\nprofiling\nManual spot-check (5% random sample). Derive structured indicator profiles. False-positive rate in final\ndelivery: <3%.\nTechnology\nLayer\nStack\nData collection\nScrapy",
+            "Playwright",
+            "boto3 (S3)\nNLP & classification\nspaCy",
+            "scikit-learn",
+            "sentence-transformers",
+            "fine-tuned\nBERT classifiers\nEntity resolution\ndedupe library + custom Jaro-Winkler\nPipeline orchestration\nApache Airflow\nStorage & query\nPostgreSQL",
+            "Elasticsearch",
+            "S3\nDelivery\nJSON",
+            "CSV",
+            "Parquet; REST API on request"
+          ]
+        }
+      },
+      "projects": [
+        {
+          "project_name": "Cybersecurity SME Landscape in the EU: Market Mapping and Supply Chain Analysis",
+          "client": "ENISA",
+          "value_EUR": 480000,
+          "duration": "18 months\n(2023–2024)",
+          "role": "Prime contractor",
+          "lead_researchers": [
+            "Dr. A. Becker",
+            "T. Vogel"
+          ],
+          "key_deliverables": [
+            "Entity dataset: 14,200+ verified cybersecurity-relevant SMEs across EU27",
+            "Supply chain relationship map for 8 CRA product categories",
+            "4 quarterly monitoring updates",
+            "Final report with policy recommendations"
+          ],
+          "status": "Completed"
+        },
+        {
+          "project_name": "European Data Economy Monitoring Tool — Phase III Update",
+          "client": "European Commission JRC",
+          "value_EUR": 620000,
+          "duration": "24 months\n(2024–2026)",
+          "role": "Prime contractor",
+          "lead_researchers": [
+            "Dr. A. Becker",
+            "T. Vogel",
+            "S. Chen"
+          ],
+          "key_deliverables": [
+            "Redesigned web-based indicator methodology",
+            "Quarterly dataset updates (JSON + CSV)",
+            "API wrapper for near-real-time indicator access",
+            "Annual trend report (Year 1 delivered)"
+          ],
+          "status": "Ongoing"
+        },
+        {
+          "project_name": "FinTech and Digital Finance Market Analysis: Third-Party ICT Providers under DORA",
+          "client": "European Banking Authority",
+          "value_EUR": 290000,
+          "duration": "12 months\n(2024–2025)",
+          "role": "Prime contractor",
+          "lead_researchers": [
+            "S. Chen",
+            "Dr. A. Becker"
+          ],
+          "key_deliverables": [
+            "Entity typology for DORA-relevant ICT providers",
+            "Population dataset: 6,400+ entities with indicator profiles",
+            "Sector concentration analysis",
+            "Policy brief for EBA supervisory teams"
+          ],
+          "status": "Completed"
+        },
+        {
+          "project_name": "Mapping the EU Industrial Deep Tech Ecosystem: Robotics, Advanced Materials, and Photonics",
+          "client": "European Commission DG GROW",
+          "value_EUR": 410000,
+          "duration": "20 months\n(2022–2024)",
+          "role": "Prime contractor",
+          "lead_researchers": [
+            "Dr. A. Becker",
+            "T. Vogel"
+          ],
+          "key_deliverables": [
+            "Three sector-specific entity datasets (combined: 9,800+ organisations)",
+            "Supply chain and IP linkage analysis",
+            "Longitudinal trend comparison (2019 vs 2022)",
+            "Interactive dashboard prototype"
+          ],
+          "status": "Completed"
+        },
+        {
+          "project_name": "European Media Market Monitoring: News Publishers, Platforms, and Regulatory Compliance",
+          "client": "European Commission DG CNECT",
+          "value_EUR": 350000,
+          "duration": "18 months\n(2023–2024)",
+          "role": "Prime contractor",
+          "lead_researchers": [
+            "S. Chen",
+            "Dr. A. Becker"
+          ],
+          "key_deliverables": [
+            "Population map of EU news publishers and media services (11,000+ entities)",
+            "Platform dependency analysis per DSA/EMFA scope",
+            "Country-level regulatory compliance readiness assessment",
+            "Quarterly monitoring updates"
+          ],
+          "status": "Completed"
+        },
+        {
+          "project_name": "Mapping Germany's AI Startup Landscape: Founders, Investors, and Sectoral Deployment",
+          "client": "Federal Ministry for Economic Affairs (BMWi)",
+          "value_EUR": 180000,
+          "duration": "12 months\n(2021–2022)",
+          "role": "Prime contractor",
+          "lead_researchers": [
+            "Dr. A. Becker",
+            "T. Vogel"
+          ],
+          "key_deliverables": [
+            "Database of 1,400+ German AI startups with founding year, funding stage, sector",
+            "Investor network analysis",
+            "Policy brief for BMWK AI strategy team"
+          ],
+          "status": "Completed"
+        }
+      ],
+      "team_members": [
+        {
+          "name": "Dr. Anna Becker",
+          "role": "Managing Director / Project Lead",
+          "seniority": "Principal",
+          "skills": {
+            "Market Mapping": "Expert",
+            "Data Engineering": "Intermediate",
+            "NLP/ML": "Basic",
+            "Policy Analysis": "Expert",
+            "Stakeholder Management": "Expert"
+          },
+          "availability_days_per_month": 12
+        },
+        {
+          "name": "Thomas Vogel",
+          "role": "Senior Data Engineer",
+          "seniority": "Senior",
+          "skills": {
+            "Market Mapping": "Intermediate",
+            "Data Engineering": "Expert",
+            "NLP/ML": "Advanced",
+            "Policy Analysis": "Basic",
+            "Stakeholder Management": "Basic"
+          },
+          "availability_days_per_month": 18
+        },
+        {
+          "name": "Sofia Chen",
+          "role": "Policy & Regulatory Research Lead",
+          "seniority": "Senior",
+          "skills": {
+            "Market Mapping": "Advanced",
+            "Data Engineering": "Basic",
+            "NLP/ML": "Basic",
+            "Policy Analysis": "Expert",
+            "Stakeholder Management": "Advanced"
+          },
+          "availability_days_per_month": 16
+        },
+        {
+          "name": "Marcus Weber",
+          "role": "Data Scientist",
+          "seniority": "Mid",
+          "skills": {
+            "Market Mapping": "Intermediate",
+            "Data Engineering": "Advanced",
+            "NLP/ML": "Expert",
+            "Policy Analysis": "Basic",
+            "Stakeholder Management": "Basic"
+          },
+          "availability_days_per_month": 20
+        },
+        {
+          "name": "Julia Schneider",
+          "role": "Research Analyst",
+          "seniority": "Junior",
+          "skills": {
+            "Market Mapping": "Advanced",
+            "Data Engineering": "Intermediate",
+            "NLP/ML": "Basic",
+            "Policy Analysis": "Advanced",
+            "Stakeholder Management": "Intermediate"
+          },
+          "availability_days_per_month": 20
+        },
+        {
+          "name": "Andrei Popescu",
+          "role": "Junior Data Engineer",
+          "seniority": "Junior",
+          "skills": {
+            "Market Mapping": "Basic",
+            "Data Engineering": "Advanced",
+            "NLP/ML": "Intermediate",
+            "Policy Analysis": "Basic",
+            "Stakeholder Management": "Basic"
+          },
+          "availability_days_per_month": 22
+        }
+      ],
+      "reference_contacts": [
+        {
+          "project_reference": "ENISA/2023/OP/0008",
+          "client_organisation": "ENISA",
+          "contact_name": "Dr. Klaus Müller",
+          "contact_title": "Head of Unit, Market Analysis",
+          "email": "k.mueller@enisa.europa.eu",
+          "relationship": "Prime contractor"
+        },
+        {
+          "project_reference": "JRC/2024/OP/0019",
+          "client_organisation": "European Commission JRC",
+          "contact_name": "Dr. Marie Leclerc",
+          "contact_title": "Senior Researcher, Digital Economy",
+          "email": "marie.leclerc@ec.europa.eu",
+          "relationship": "Prime contractor"
+        },
+        {
+          "project_reference": "EBA/2024/OP/0003",
+          "client_organisation": "European Banking Authority",
+          "contact_name": "Robert Janssen",
+          "contact_title": "Policy Advisor, Digital Finance",
+          "email": "r.janssen@eba.europa.eu",
+          "relationship": "Prime contractor"
+        },
+        {
+          "project_reference": "DG GROW/2022/OP/0011",
+          "client_organisation": "European Commission DG GROW",
+          "contact_name": "Isabelle Fontaine",
+          "contact_title": "Project Manager, Industrial Strategy",
+          "email": "isabelle.fontaine@ec.europa.eu",
+          "relationship": "Prime contractor"
+        },
+        {
+          "project_reference": "Fraunhofer ISI sub.",
+          "client_organisation": "Fraunhofer ISI",
+          "contact_name": "Prof. Dr. Stefan Rammer",
+          "contact_title": "Head of Department, Innovation Economics",
+          "email": "s.rammer@isi.fraunhofer.de",
+          "relationship": "Subcontractor"
+        }
+      ],
+      "key_facts": {
+        "CPV_codes": [
+          "79300000",
+          "72316000",
+          "73200000"
+        ],
+        "NUTS_code": "",
+        "NACE_code": "",
+        "authorized_signatory": "Dr. Anna Becker",
+        "bank_details": ""
+      }
+    }
+  ],
+  "methodology_documents": [
+    {
+      "file_name": "data_quality_procedures.txt",
+      "methodology_name": "Data Quality Procedures",
+      "description": "MERIDIAN INTELLIGENCE GMBH DATA QUALITY AND VALIDATION PROCEDURES Internal Reference: MIG-QA-001 | Version 3.2 | Last updated: February 2025  ===========================================================",
+      "steps": [
+        "Stage 1: Exact match on VAT number or national registration number",
+        "Stage 2: Fuzzy name matching (Jaro-Winkler threshold: 0",
+        "Stage 3: Domain-level matching (same primary web domain = same entity)"
+      ],
+      "tools_used": [
+        "JSON",
+        "CSV",
+        "Parquet"
+      ]
+    },
+    {
+      "file_name": "webmap_methodology.docx",
+      "methodology_name": "Webmap Methodology",
+      "description": "Overview\nWebMap is Meridian Intelligence's proprietary framework for the systematic identification, classification, and continuous monitoring of organisations in defined markets. It has been developed iteratively since 2017 and applied in more than 25 completed projects covering markets ranging from cybersecurity SMEs to media publishers to advanced manufacturing firms across the EU27.\nThe core design principle of WebMap is evidence-first classification: organisations are retained in a defined market scope only if verifiable evidence supports their inclusion, not because they match a generic keyword or appear in a particular database. This produces lower headline counts than database-lookup approaches but substantially higher precision — typically validated false-positive rates of under 3%.\n\n2.",
+      "steps": [
+        "1. Overview",
+        "27.\nThe core design principle of WebMap is evidence-first classification: organisations are retained in a defined market scope only if verifiable evidence supports their inclusion, not because they match a generic keyword or appear in a particular database. This produces lower headline counts than database-lookup approaches but substantially higher precision — typically validated false-positive rates of under 3%.",
+        "2. Pipeline Architecture",
+        "3. Seed Universe Construction",
+        "4. Evidence Classification",
+        "5. Indicator Derivation",
+        "6. Update and Monitoring Cadence",
+        "7. Quality Metrics — Benchmark Performance",
+        "8. Technology Stack"
+      ],
+      "tools_used": [
+        "Python",
+        "Scrapy",
+        "Playwright",
+        "boto3",
+        "spaCy",
+        "scikit-learn",
+        "sentence-transformers",
+        "BERT",
+        "Apache Airflow",
+        "PostgreSQL",
+        "Elasticsearch",
+        "S3",
+        "AWS",
+        "JSON",
+        "CSV",
+        "Parquet",
+        "REST API"
+      ]
+    }
+  ],
+  "team_cvs": [
+    {
+      "id": "anna_becker",
+      "name": "Dr. Anna Becker",
+      "title": "Managing Director & Principal Researcher",
+      "contact": {
+        "email": "a.becker@meridian-intelligence.eu",
+        "phone": "+49 30 884 2210",
+        "company": "Meridian Intelligence GmbH",
+        "location": "Berlin"
+      },
+      "category": "team_cvs",
+      "sections": {
+        "Professional Summary": [
+          "Economist and research director with 14 years of experience in market intelligence, policy-oriented empirical research, and EU institutional consulting. Leads Meridian's client portfolio across European Commission directorates, EU regulatory agencies, and public research institutes. Specialist in designing large-scale market mapping studies that combine quantitative data infrastructure with qualitative policy analysis. Native German speaker; working fluency in English and French."
+        ],
+        "Education": [
+          "PhD in Economics — Humboldt-Universität zu Berlin (2011)",
+          "Dissertation: Structural Change and Knowledge Intensity in European Industry Clusters",
+          "Supervisors: Prof. Dr. Jens Hartig, Prof. Dr. Miriam Löhr",
+          "M.Sc. in European Economic Studies — College of Europe, Bruges (2007)",
+          "Specialisation: EU Internal Market and Regulatory Policy",
+          "B.Sc. in Economics — Freie Universität Berlin (2006)"
+        ],
+        "Professional Experience": [
+          "Managing Director — Meridian Intelligence GmbH, Berlin",
+          "2019 – present",
+          "Oversees all client-facing research operations and business development. Manages a team of 12 researchers and data analysts. Responsible for methodology design, quality assurance, and senior stakeholder engagement. Key accounts include DG CNECT, JRC, ENISA, EBA, and several large German industrial associations.",
+          "Selected project leadership:",
+          "ENISA/2023/OP/0008 — Cybersecurity SME Landscape in the EU: Population mapping, market sizing, and supply chain analysis across 27 member states. Delivered structured dataset of 14,200+ verified entities.",
+          "JRC/2024/OP/0019 — European Data Economy Monitoring Tool update: Led methodology redesign for web-based indicator derivation; supervised delivery of quarterly dataset updates.",
+          "EBA/2024/OP/0003 — FinTech and Digital Finance Market Analysis: Principal investigator for pan-EU market sizing study covering 6,400+ entities.",
+          "Senior Researcher — Prognos AG, Berlin",
+          "2014 – 2019",
+          "Led EU-funded research projects in industrial economics and labour market analysis. Primary client contacts at DG GROW and DG EMPL. Developed Prognos's first web-scraping-based company profiling methodology.",
+          "Research Associate — DIW Berlin (German Institute for Economic Research)",
+          "2011 – 2014",
+          "Contributed to panel data studies on firm-level innovation and productivity. Published three peer-reviewed papers on knowledge spillovers and regional industrial clusters."
+        ],
+        "Technical Skills": [],
+        "Selected Publications": [
+          "Becker, A. & Vogel, T. (2023). \"Web-derived indicators for SME market mapping: methodology and validation.\" Journal of Industrial Economics and Data, 14(2), 88–107.",
+          "Becker, A. (2019). \"Identifying niche market actors in fragmented EU industries: limits of standard databases.\" European Economic Review, 112, 201–218.",
+          "Becker, A. & Hartig, J. (2012). \"Knowledge intensity and regional clustering in German manufacturing.\" Regional Studies, 46(8), 1033–1051."
+        ],
+        "Selected Publications & Contributions": [],
+        "Selected Project Contributions": [],
+        "Languages": [
+          "German (native)",
+          "English (fluent)",
+          "French (professional working proficiency)"
+        ],
+        "Role in Proposed Project": "Project Director. Overall responsibility for delivery, client relationship management, and quality assurance. Will chair all steering committee meetings and sign off on all deliverables."
+      }
+    },
+    {
+      "id": "marcus_weber",
+      "name": "Marcus Weber",
+      "title": "Data Scientist — NLP & Machine Learning",
+      "contact": {
+        "email": "m.weber@meridian-intelligence.eu",
+        "phone": "+49 30 884 2224",
+        "company": "Meridian Intelligence GmbH",
+        "location": "Berlin"
+      },
+      "category": "team_cvs",
+      "sections": {
+        "Professional Summary": [
+          "Applied data scientist specialising in natural language processing, entity classification, and large-scale text analysis. Joined Meridian in 2021. Responsible for the design and maintenance of Meridian's NLP classification pipeline — the core engine that determines which organisations are relevant to a given market scope based on their web content. Particular expertise in fine-tuning transformer-based models for domain-specific classification tasks in German and English. Background in computational linguistics and applied ML research."
+        ],
+        "Education": [
+          "M.Sc. in Computational Linguistics — Ludwig-Maximilians-Universität München (2020)",
+          "Thesis: Domain adaptation for low-resource entity classification using web-scraped training data",
+          "Graduated with distinction",
+          "B.Sc. in Informatics — Technische Universität München (2018)"
+        ],
+        "Professional Experience": [
+          "Data Scientist — Meridian Intelligence GmbH, Berlin",
+          "2021 – present",
+          "Owns the NLP and classification layer of Meridian's WebMap pipeline. Core responsibilities:",
+          "Design and training of multi-label text classifiers for organisational scope determination (currently in deployment: cybersecurity, data economy, AI/ML, fintech, industrial deep tech classifiers)",
+          "Entity resolution: hybrid blocking + embedding-based deduplication system processing 10M+ records",
+          "Model evaluation: stratified hold-out validation, false-positive auditing, quarterly retraining cycles",
+          "Research on classifier adaptation to new project scopes: typical time-to-deployment for a new domain classifier is 3–4 weeks",
+          "Notable technical contributions at Meridian:",
+          "Reduced WebMap classification latency by 60% by replacing spaCy rule-based pipelines with fine-tuned sentence-BERT models (2022)",
+          "Developed a cross-lingual entity matching module enabling reliable deduplication across 23 EU language variants (2023)",
+          "Built the AI involvement indicator introduced in JRC Phase III — a continuous score for AI-product-or-service relevance derived from web content, validated against a manually annotated sample of 4,200 companies (2024)",
+          "ML Research Assistant — Fraunhofer IAIS, Sankt Augustin",
+          "2020 – 2021",
+          "Contributed to a research project on automated knowledge graph construction from scientific literature. Developed named entity recognition models for scientific entity types (methods, datasets, metrics). Co-authored one peer-reviewed paper."
+        ],
+        "Technical Skills": [
+          "Languages: Python (expert), SQL (advanced), R (intermediate)",
+          "NLP/ML: PyTorch, Transformers (Hugging Face), spaCy, scikit-learn, sentence-transformers, NLTK",
+          "Data infrastructure: PostgreSQL, Elasticsearch, Apache Airflow, Docker",
+          "Cloud: AWS (SageMaker, S3, Lambda)",
+          "Evaluation: MLflow, Weights & Biases, custom hold-out validation frameworks"
+        ],
+        "Selected Publications": [
+          "Weber, M. & Schuster, J. (2021). \"Semi-supervised named entity recognition for scientific text using weak supervision.\" Proceedings of EMNLP 2021 Workshop on Scientific Document Understanding, 88–96."
+        ],
+        "Selected Publications & Contributions": [],
+        "Selected Project Contributions": [],
+        "Languages": [
+          "German (native)",
+          "English (fluent)"
+        ],
+        "Role in Proposed Project": "Data Science Lead. Responsible for classifier development and maintenance, entity resolution, model evaluation, and any AI/ML technical deliverables. Works directly under Thomas Vogel's technical oversight."
+      }
+    },
+    {
+      "id": "sofia_chen",
+      "name": "Sofia Chen",
+      "title": "Research Lead — Policy & Regulatory Analysis",
+      "contact": {
+        "email": "s.chen@meridian-intelligence.eu",
+        "phone": "+49 30 884 2231",
+        "company": "Meridian Intelligence GmbH",
+        "location": "Berlin"
+      },
+      "category": "team_cvs",
+      "sections": {
+        "Professional Summary": [
+          "Policy researcher and regulatory analyst with ten years of experience in EU digital and technology policy. Specialises in translating regulatory frameworks into analytical scopes for market intelligence projects — defining what needs to be measured, which entities are in scope, and what evidence constitutes relevance under a given legal definition. At Meridian since 2020. Prior experience at the European Parliament and a Brussels-based policy think tank. Fluent in four languages; frequent presenter at EU policy forums."
+        ],
+        "Education": [
+          "M.A. in European Public Policy — Sciences Po Paris (2014)",
+          "Specialisation: Digital Governance and Technology Regulation",
+          "B.A. in Political Science and Economics — University of Edinburgh (2012)",
+          "First Class Honours"
+        ],
+        "Professional Experience": [
+          "Research Lead, Policy & Regulatory Analysis — Meridian Intelligence GmbH, Berlin",
+          "2020 – present",
+          "Leads policy scoping and regulatory interpretation for all Meridian projects involving EU legislative frameworks. Responsibilities include:",
+          "Translating legal definitions (e.g., AI Act risk categories, DORA entity scope, NIS2 essential entities) into operational classification criteria for data collection",
+          "Authoring policy context sections of all major research deliverables",
+          "Managing stakeholder consultation processes, including expert interviews and advisory group facilitation",
+          "Co-leading business development for EU regulatory support projects",
+          "Selected contributions:",
+          "ENISA/2023/OP/0008: Developed the sector-by-sector scope definition for cybersecurity product categories, mapped to NACE codes and CRA product taxonomy",
+          "EBA/2024/OP/0003: Led regulatory scoping for DORA-relevant third-party ICT providers; designed the entity typology used for classification",
+          "DG CNECT/2023/OP/0021: Authored policy context analysis for European media market monitoring study",
+          "Policy Analyst — Brussels European and Global Economic Laboratory (BRUEGEL), Brussels",
+          "2016 – 2020",
+          "Produced policy briefs, working papers, and testimonies on EU digital single market regulation, platform economy governance, and data policy. Presented findings to European Parliament committees on three occasions. Managed a portfolio of 6–8 research projects simultaneously.",
+          "Parliamentary Assistant — European Parliament, Brussels",
+          "2014 – 2016",
+          "Supported MEP Renate Künast (Greens/EFA) on digital rights and data protection dossiers during the GDPR trilogue process. Drafted briefing notes, attended committee hearings, and coordinated with civil society organisations."
+        ],
+        "Technical Skills": [],
+        "Selected Publications": [],
+        "Selected Publications & Contributions": [
+          "Chen, S. (2023). \"Operationalising the AI Act: from legal text to market scope.\" Meridian Intelligence Policy Brief, No. 7.",
+          "Chen, S. & Becker, A. (2022). \"Who is a cybersecurity provider? Classification challenges under the NIS2 Directive.\" European Cybersecurity Journal, 8(1), 44–59.",
+          "Chen, S. (2019). \"Platform intermediaries and the limits of self-classification: evidence from EU e-commerce.\" BRUEGEL Working Paper 2019/07."
+        ],
+        "Selected Project Contributions": [],
+        "Languages": [
+          "English (native)",
+          "German (fluent)",
+          "French (fluent)",
+          "Mandarin (intermediate)"
+        ],
+        "Role in Proposed Project": "Policy Lead. Responsible for regulatory scoping, entity typology design, policy context sections of all deliverables, and management of any stakeholder consultation activities. Will serve as day-to-day contact for the contracting authority on all substantive policy questions."
+      }
+    },
+    {
+      "id": "thomas_vogel",
+      "name": "Thomas Vogel",
+      "title": "Senior Data Engineer & Web Intelligence Lead",
+      "contact": {
+        "email": "t.vogel@meridian-intelligence.eu",
+        "phone": "+49 30 884 2218",
+        "company": "Meridian Intelligence GmbH",
+        "location": "Berlin"
+      },
+      "category": "team_cvs",
+      "sections": {
+        "Professional Summary": [
+          "Data engineer and applied researcher specialising in large-scale web data acquisition, natural language processing, and automated entity classification. At Meridian since 2017. Designed and maintains the firm's core web intelligence pipeline — a system capable of ingesting, processing, and classifying organisational web data at EU-wide scale. Strong background in Python, cloud infrastructure, and reproducible data workflows. Comfortable bridging technical implementation and research methodology."
+        ],
+        "Education": [
+          "M.Sc. in Data Science — Technische Universität Berlin (2016)",
+          "Thesis: Automated classification of firm-level technological capabilities using web text data",
+          "B.Sc. in Computer Science — Karlsruher Institut für Technologie (2014)"
+        ],
+        "Professional Experience": [
+          "Senior Data Engineer — Meridian Intelligence GmbH, Berlin",
+          "2017 – present",
+          "Leads all technical infrastructure for Meridian's data collection and processing pipeline. Core responsibilities include:",
+          "Design and maintenance of web crawling, text extraction, and deduplication systems covering 30M+ organisational web pages",
+          "Development of NLP-based classification models for entity profiling (sector, capabilities, size proxies)",
+          "Delivery of structured datasets in machine-readable formats for EU institutional clients",
+          "Technical supervision of two junior data engineers",
+          "Selected technical contributions:",
+          "Built Meridian's core entity resolution system, reducing duplicate-organisation rate from ~12% to under 1.5% across EU-wide datasets",
+          "Developed automated pipeline for quarterly dataset refresh, reducing manual processing time by ~70%",
+          "Led technical delivery for JRC/2024/OP/0019, including API wrapper for near-real-time indicator access",
+          "Junior Data Analyst — Bertelsmann Stiftung, Gütersloh",
+          "2016 – 2017",
+          "Supported quantitative research projects on European labour market dynamics. Built data pipelines for longitudinal panel datasets from Eurostat and national statistical offices."
+        ],
+        "Technical Skills": [
+          "Languages: Python (expert), SQL (advanced), R (intermediate), Bash",
+          "Frameworks: Pandas, spaCy, scikit-learn, FastAPI, Apache Airflow",
+          "Infrastructure: AWS (S3, EC2, Lambda), Docker, PostgreSQL, Elasticsearch",
+          "Data formats: JSON, Parquet, CSV, XML, REST APIs",
+          "Version control: Git, GitHub Actions (CI/CD)"
+        ],
+        "Selected Publications": [],
+        "Selected Publications & Contributions": [],
+        "Selected Project Contributions": [
+          "| Project | Role | Technical Output |",
+          "ENISA/2023/OP/0008 - Technical lead: EU cybersecurity entity dataset (14,200+ records, quarterly refresh)",
+          "JRC/2024/OP/0019 - Pipeline architect: Web indicator derivation system; API-delivered updates",
+          "EBA/2024/OP/0003 - Data engineering: FinTech entity classification model (F1: 0.87 on held-out validation set)",
+          "DG GROW/2022/OP/0011 - Data analyst: Automated supply chain relationship extraction from procurement records"
+        ],
+        "Languages": [
+          "German (native)",
+          "English (fluent)"
+        ],
+        "Role in Proposed Project": "Technical Lead. Responsible for all data infrastructure, pipeline development, entity resolution, and machine-readable deliverable production. Point of contact for all technical queries from the contracting authority."
+      }
+    }
+  ]
+}

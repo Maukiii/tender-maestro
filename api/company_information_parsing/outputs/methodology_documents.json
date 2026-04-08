@@ -1,0 +1,52 @@
+[
+  {
+    "file_name": "data_quality_procedures.txt",
+    "methodology_name": "Data Quality Procedures",
+    "description": "MERIDIAN INTELLIGENCE GMBH DATA QUALITY AND VALIDATION PROCEDURES Internal Reference: MIG-QA-001 | Version 3.2 | Last updated: February 2025  ===========================================================",
+    "steps": [
+      "Stage 1: Exact match on VAT number or national registration number",
+      "Stage 2: Fuzzy name matching (Jaro-Winkler threshold: 0",
+      "Stage 3: Domain-level matching (same primary web domain = same entity)"
+    ],
+    "tools_used": [
+      "JSON",
+      "CSV",
+      "Parquet"
+    ]
+  },
+  {
+    "file_name": "webmap_methodology.docx",
+    "methodology_name": "Webmap Methodology",
+    "description": "Overview\nWebMap is Meridian Intelligence's proprietary framework for the systematic identification, classification, and continuous monitoring of organisations in defined markets. It has been developed iteratively since 2017 and applied in more than 25 completed projects covering markets ranging from cybersecurity SMEs to media publishers to advanced manufacturing firms across the EU27.\nThe core design principle of WebMap is evidence-first classification: organisations are retained in a defined market scope only if verifiable evidence supports their inclusion, not because they match a generic keyword or appear in a particular database. This produces lower headline counts than database-lookup approaches but substantially higher precision — typically validated false-positive rates of under 3%.\n\n2.",
+    "steps": [
+      "1. Overview",
+      "27.\nThe core design principle of WebMap is evidence-first classification: organisations are retained in a defined market scope only if verifiable evidence supports their inclusion, not because they match a generic keyword or appear in a particular database. This produces lower headline counts than database-lookup approaches but substantially higher precision — typically validated false-positive rates of under 3%.",
+      "2. Pipeline Architecture",
+      "3. Seed Universe Construction",
+      "4. Evidence Classification",
+      "5. Indicator Derivation",
+      "6. Update and Monitoring Cadence",
+      "7. Quality Metrics — Benchmark Performance",
+      "8. Technology Stack"
+    ],
+    "tools_used": [
+      "Python",
+      "Scrapy",
+      "Playwright",
+      "boto3",
+      "spaCy",
+      "scikit-learn",
+      "sentence-transformers",
+      "BERT",
+      "Apache Airflow",
+      "PostgreSQL",
+      "Elasticsearch",
+      "S3",
+      "AWS",
+      "JSON",
+      "CSV",
+      "Parquet",
+      "REST API"
+    ]
+  }
+]
