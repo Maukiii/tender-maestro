@@ -13,10 +13,7 @@ type View = "projects" | "editor";
 const Index = () => {
   const [view, setView] = useState<View>("projects");
   const [sections, setSections] = useState<ProposalSection[]>(DEFAULT_SECTIONS);
-  const [activeSectionId, setActiveSectionId] = useState(DEFAULT_SECTIONS[0].id);
   const [selection, setSelection] = useState<SelectionContext | null>(null);
-
-  const activeSection = sections.find((s) => s.id === activeSectionId) ?? sections[0];
 
   const handleUpdateBlock = useCallback((blockId: string, markdown: string) => {
     setSections((prev) =>
@@ -33,6 +30,11 @@ const Index = () => {
     setSelection({ text, blockTitle });
   }, []);
 
+  const handleSidebarSelect = useCallback((sectionId: string) => {
+    const el = document.querySelector(`[data-section-id="${sectionId}"]`);
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
   if (view === "projects") {
     return <ProjectSelection onSelect={() => setView("editor")} />;
   }
@@ -41,8 +43,8 @@ const Index = () => {
     <div className="flex min-h-screen w-full">
       <KnowledgeSidebar
         sections={sections}
-        activeSectionId={activeSectionId}
-        onSelect={setActiveSectionId}
+        activeSectionId={sections[0].id}
+        onSelect={handleSidebarSelect}
       />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
@@ -62,8 +64,7 @@ const Index = () => {
         </header>
 
         <IngestPhase
-          blocks={activeSection.blocks}
-          sectionLabel={activeSection.label}
+          sections={sections}
           onUpdateBlock={handleUpdateBlock}
           onTextSelect={handleTextSelect}
         />
