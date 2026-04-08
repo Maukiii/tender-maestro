@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Database, Plus, UserPlus } from "lucide-react";
+import { Database, Plus, ChevronRight } from "lucide-react";
 import type { ProposalSection } from "@/lib/proposalData";
 
 interface SectionSidebarProps {
@@ -9,7 +9,6 @@ interface SectionSidebarProps {
   scrollContainer: HTMLElement | null;
 }
 
-/** Mock recommendations per section */
 const RECOMMENDATIONS: Record<string, { label: string; hint: string }[]> = {
   staffing: [
     { label: "Sarah Mitchell", hint: "Project Director — 18 yrs" },
@@ -33,7 +32,6 @@ export function KnowledgeSidebar({ sections, activeSectionId, onSelect, scrollCo
   const [currentSectionId, setCurrentSectionId] = useState(activeSectionId);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
-  // Scroll-spy: track which section is visible in the center pane
   useEffect(() => {
     if (!scrollContainer) return;
 
@@ -62,7 +60,6 @@ export function KnowledgeSidebar({ sections, activeSectionId, onSelect, scrollCo
     return () => scrollContainer.removeEventListener("scroll", handleScroll);
   }, [scrollContainer, sections]);
 
-  // Auto-scroll sidebar to keep active section visible
   useEffect(() => {
     const activeEl = sidebarRef.current?.querySelector(`[data-sidebar-section="${currentSectionId}"]`);
     activeEl?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -70,7 +67,6 @@ export function KnowledgeSidebar({ sections, activeSectionId, onSelect, scrollCo
 
   return (
     <aside className="w-72 h-screen flex flex-col bg-sidebar border-r border-sidebar-border">
-      {/* Header */}
       <div className="px-5 py-6 border-b border-sidebar-border shrink-0">
         <div className="flex items-center gap-2">
           <Database className="h-5 w-5 text-sidebar-primary" />
@@ -80,7 +76,6 @@ export function KnowledgeSidebar({ sections, activeSectionId, onSelect, scrollCo
         </div>
       </div>
 
-      {/* Section list — scrollable */}
       <div ref={sidebarRef} className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
         {sections.map((section) => {
           const Icon = section.icon;
@@ -100,38 +95,57 @@ export function KnowledgeSidebar({ sections, activeSectionId, onSelect, scrollCo
                   }
                 `}
               >
+                <ChevronRight
+                  className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 ${
+                    isActive ? "rotate-90 text-sidebar-primary" : "text-sidebar-muted"
+                  }`}
+                />
                 <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-sidebar-primary" : "text-sidebar-muted"}`} />
                 <div className="flex-1 min-w-0">
                   <span className="text-sm font-medium">{section.label}</span>
-                  <span className="ml-2 text-xs text-sidebar-muted">
-                    {section.blocks.length}
-                  </span>
                 </div>
               </button>
 
-              {/* Recommendations — shown when section is active */}
-              {isActive && recs.length > 0 && (
-                <div className="ml-4 mt-1 mb-2 space-y-1 border-l-2 border-sidebar-border pl-3">
-                  <p className="text-xs font-medium text-sidebar-muted uppercase tracking-wider py-1">
-                    Suggestions
-                  </p>
-                  {recs.map((rec) => (
-                    <button
-                      key={rec.label}
-                      type="button"
-                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left hover:bg-sidebar-accent/50 transition-colors group"
+              {/* Expanded content: blocks + recommendations */}
+              {isActive && (
+                <div className="ml-5 mt-1 mb-2 border-l-2 border-sidebar-border pl-3 space-y-0.5">
+                  {/* Current blocks */}
+                  {section.blocks.map((block) => (
+                    <div
+                      key={block.id}
+                      className="px-2 py-1.5 rounded-md text-xs text-sidebar-foreground/80 truncate"
                     >
-                      <Plus className="h-3 w-3 text-sidebar-muted group-hover:text-sidebar-primary transition-colors shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-sidebar-foreground truncate">
-                          {rec.label}
-                        </p>
-                        <p className="text-xs text-sidebar-muted truncate">
-                          {rec.hint}
+                      {block.title}
+                    </div>
+                  ))}
+
+                  {/* Recommendations */}
+                  {recs.length > 0 && (
+                    <>
+                      <div className="pt-2 pb-1">
+                        <p className="text-[10px] font-semibold text-sidebar-muted uppercase tracking-widest px-2">
+                          Suggestions
                         </p>
                       </div>
-                    </button>
-                  ))}
+                      {recs.map((rec) => (
+                        <button
+                          key={rec.label}
+                          type="button"
+                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left hover:bg-sidebar-accent/50 transition-colors group"
+                        >
+                          <Plus className="h-3 w-3 text-sidebar-muted group-hover:text-sidebar-primary transition-colors shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-sidebar-foreground truncate">
+                              {rec.label}
+                            </p>
+                            <p className="text-[10px] text-sidebar-muted truncate">
+                              {rec.hint}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -139,7 +153,6 @@ export function KnowledgeSidebar({ sections, activeSectionId, onSelect, scrollCo
         })}
       </div>
 
-      {/* Footer */}
       <div className="px-5 py-4 border-t border-sidebar-border shrink-0">
         <p className="text-xs text-sidebar-muted">
           Powered by AI Agent v2.1
