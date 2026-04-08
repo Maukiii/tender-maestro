@@ -214,21 +214,43 @@ export function KnowledgeSidebar({
           );
         })}
 
-        {/* Add new section */}
+        {/* Add new section — show available templates */}
         {addingSectionName ? (
-          <form
-            onSubmit={(e) => { e.preventDefault(); commitNewSection(); }}
-            className="px-3 py-2"
-          >
-            <input
-              ref={sectionInputRef}
-              value={newSectionName}
-              onChange={(e) => setNewSectionName(e.target.value)}
-              onBlur={commitNewSection}
-              placeholder="Section name…"
-              className="w-full bg-sidebar-accent/50 border border-sidebar-border rounded-lg px-3 py-2 text-sm text-sidebar-foreground placeholder:text-sidebar-muted focus:outline-none focus:ring-1 focus:ring-sidebar-primary"
-            />
-          </form>
+          <div className="px-3 py-2 space-y-1">
+            <p className="text-[10px] font-semibold text-sidebar-muted uppercase tracking-widest px-1 pb-1">
+              Choose a template
+            </p>
+            {SECTION_TEMPLATES
+              .filter((t) => !sections.some((s) => s.id === t.id))
+              .map((t) => {
+                const TIcon = t.icon;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => { onAddSection(t.label); setAddingSectionName(false); }}
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+                  >
+                    <TIcon className="h-3.5 w-3.5 text-sidebar-muted shrink-0" />
+                    <span className="text-xs font-medium">{t.label}</span>
+                    <span className="ml-auto text-[10px] text-sidebar-muted">{t.blocks.length}b</span>
+                  </button>
+                );
+              })}
+            <form
+              onSubmit={(e) => { e.preventDefault(); commitNewSection(); }}
+              className="pt-1"
+            >
+              <input
+                ref={sectionInputRef}
+                value={newSectionName}
+                onChange={(e) => setNewSectionName(e.target.value)}
+                onBlur={commitNewSection}
+                placeholder="Or type a custom name…"
+                className="w-full bg-sidebar-accent/50 border border-sidebar-border rounded-lg px-3 py-2 text-sm text-sidebar-foreground placeholder:text-sidebar-muted focus:outline-none focus:ring-1 focus:ring-sidebar-primary"
+              />
+            </form>
+          </div>
         ) : (
           <button
             type="button"
