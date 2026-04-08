@@ -36,20 +36,8 @@ const DEFAULT_BLOCKS: ProposalBlock[] = [
   },
 ];
 
-interface IngestPhaseProps {
-  onAnalyze: (file: File) => void;
-}
-
-export function IngestPhase({ onAnalyze }: IngestPhaseProps) {
+export function IngestPhase() {
   const [blocks, setBlocks] = useState<ProposalBlock[]>(DEFAULT_BLOCKS);
-
-  const updateBlock = (id: string, markdown: string) => {
-    setBlocks((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, markdown } : b))
-    );
-  };
-
-  const hasContent = blocks.some((b) => b.markdown.trim().length > 0);
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
