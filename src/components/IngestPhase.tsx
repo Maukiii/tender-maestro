@@ -27,9 +27,16 @@ export function IngestPhase({ sections, onUpdateBlock, onTextSelect, onScrollCon
     [onTextSelect]
   );
 
+  const scrollRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      if (el && onScrollContainerReady) onScrollContainerReady(el);
+    },
+    [onScrollContainerReady]
+  );
+
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      <div className="flex-1 overflow-y-auto px-8 py-6">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-8 py-6">
         <div className="w-full max-w-3xl mx-auto space-y-8">
           {sections.map((section) => {
             const Icon = section.icon;
