@@ -30,7 +30,8 @@ The JSON must follow exactly the following hierarchy:
     “reference_number”: “”,
     “contracting_authority”: “”,
     “estimated_value_euro”: 0,
-    “max_duration_months”: 0,
+    “initial_duration_months”: 0,
+    “extension_options_months”: 0,
     “procedure_type”: “”,
     “submission_deadline”: “”
   },
@@ -56,6 +57,18 @@ The JSON must follow exactly the following hierarchy:
   “compliance_and_selection”: {
     “financial_economic_capacity”: { “min_turnover_required”: 0, ‘other_requirements’: “” },
     “technical_professional_capacity”: { “reference_projects_required”: 0, ‘reference_details’: “” }
+    “required_reference_details_structure”: {"mandatory_fields": [
+      "contract_value_euro",
+      "contracting_authority_client",
+      "period_of_performance_start_end",
+      "description_of_deliverables",
+      "contact_details_for_verification"
+    ],
+    "content_proof_requirements": [
+      "comparable_contract_size_complexity",
+      "large_scale_data_collection_evidence",
+      "eu_digital_policy_experience"
+    ]}
   },
   “evaluation_logic”: {
     “quality_price_ratio”: “”,
