@@ -57,7 +57,7 @@ export interface IncomingTender {
   client: string;
   deadline: string;
   budgetRange: string;
-  matchScore: number; // 0-100
+  scores: { label: string; value: number }[]; // 3 category scores, 0-100
   matchReasons: string[];
   uploadedAt: string;
 }

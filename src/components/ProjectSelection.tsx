@@ -46,7 +46,7 @@ const MOCK_INCOMING_TENDERS: IncomingTender[] = [
     client: "Federal Statistics Office",
     deadline: "15 May 2026",
     budgetRange: "€800K – €1.2M",
-    matchScore: 92,
+    scores: [{ label: "A", value: 92 }, { label: "B", value: 85 }, { label: "C", value: 78 }],
     matchReasons: ["Strong cloud expertise match", "Past experience with gov analytics", "Team capacity available"],
     uploadedAt: "30 min ago",
   },
@@ -56,7 +56,7 @@ const MOCK_INCOMING_TENDERS: IncomingTender[] = [
     client: "Regional Health Authority",
     deadline: "28 Apr 2026",
     budgetRange: "€400K – €600K",
-    matchScore: 74,
+    scores: [{ label: "A", value: 74 }, { label: "B", value: 68 }, { label: "C", value: 81 }],
     matchReasons: ["Good technical fit", "Limited healthcare domain experience"],
     uploadedAt: "2 hours ago",
   },
@@ -66,7 +66,7 @@ const MOCK_INCOMING_TENDERS: IncomingTender[] = [
     client: "Interior Ministry",
     deadline: "10 Jun 2026",
     budgetRange: "€1.5M – €2M",
-    matchScore: 45,
+    scores: [{ label: "A", value: 45 }, { label: "B", value: 38 }, { label: "C", value: 52 }],
     matchReasons: ["Biometrics not a core competency", "Scale exceeds typical projects"],
     uploadedAt: "1 day ago",
   },
@@ -76,7 +76,7 @@ const MOCK_INCOMING_TENDERS: IncomingTender[] = [
     client: "City of Hamburg",
     deadline: "22 May 2026",
     budgetRange: "€300K – €500K",
-    matchScore: 83,
+    scores: [{ label: "A", value: 83 }, { label: "B", value: 90 }, { label: "C", value: 76 }],
     matchReasons: ["ERP migration experience", "Strong local references", "Right team size"],
     uploadedAt: "3 hours ago",
   },
@@ -100,25 +100,29 @@ function getScoreLabel(score: number): string {
   return "Weak Fit";
 }
 
-function ScoreRing({ score }: { score: number }) {
-  const radius = 18;
-  const circumference = 2 * Math.PI * radius;
+function ScoreRing({ score, label, size = "md" }: { score: number; label?: string; size?: "sm" | "md" }) {
+  const dims = size === "sm" ? { w: 10, r: 14, sw: 2.5, vb: 36, text: "text-[10px]" } : { w: 12, r: 18, sw: 3, vb: 44, text: "text-xs" };
+  const circumference = 2 * Math.PI * dims.r;
   const offset = circumference - (score / 100) * circumference;
+  const center = dims.vb / 2;
 
   return (
-    <div className="relative flex items-center justify-center w-12 h-12 shrink-0">
-      <svg className="w-12 h-12 -rotate-90" viewBox="0 0 44 44">
-        <circle cx="22" cy="22" r={radius} fill="none" stroke="currentColor" strokeWidth="3" className="text-muted/30" />
-        <circle
-          cx="22" cy="22" r={radius} fill="none"
-          strokeWidth="3" strokeLinecap="round"
-          stroke="currentColor"
-          className={getScoreColor(score)}
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-        />
-      </svg>
-      <span className={`absolute text-xs font-bold ${getScoreColor(score)}`}>{score}</span>
+    <div className="flex flex-col items-center gap-1 shrink-0">
+      <div className={`relative flex items-center justify-center w-${dims.w} h-${dims.w}`} style={{ width: dims.w * 4, height: dims.w * 4 }}>
+        <svg className="-rotate-90" style={{ width: dims.w * 4, height: dims.w * 4 }} viewBox={`0 0 ${dims.vb} ${dims.vb}`}>
+          <circle cx={center} cy={center} r={dims.r} fill="none" stroke="currentColor" strokeWidth={dims.sw} className="text-muted/30" />
+          <circle
+            cx={center} cy={center} r={dims.r} fill="none"
+            strokeWidth={dims.sw} strokeLinecap="round"
+            stroke="currentColor"
+            className={getScoreColor(score)}
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+          />
+        </svg>
+        <span className={`absolute ${dims.text} font-bold ${getScoreColor(score)}`}>{score}</span>
+      </div>
+      {label && <span className="text-[10px] text-muted-foreground font-medium">{label}</span>}
     </div>
   );
 }
