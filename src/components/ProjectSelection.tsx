@@ -1,4 +1,5 @@
-import { FileText, Plus, Clock, ChevronRight } from "lucide-react";
+import { useState, useCallback, useRef } from "react";
+import { FileText, Plus, Clock, ChevronRight, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export interface TenderProject {
@@ -62,6 +63,44 @@ interface ProjectSelectionProps {
 }
 
 export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
+  const [showUploadOverlay, setShowUploadOverlay] = useState(false);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = useCallback((file: File) => {
+    // For now just log the file — logic will be added later
+    console.log("Tender document uploaded:", file.name, file.type);
+    setShowUploadOverlay(false);
+  }, []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDraggingOver(false);
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    },
+    [handleFile]
+  );
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingOver(false);
+  }, []);
+
+  const handleFileInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) handleFile(file);
+    },
+    [handleFile]
+  );
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
@@ -69,7 +108,7 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
         <h1 className="text-base font-semibold text-foreground">
           Tender Drafting Agent
         </h1>
-        <Button size="sm" className="gap-1.5">
+        <Button size="sm" className="gap-1.5" onClick={() => setShowUploadOverlay(true)}>
           <Plus className="h-3.5 w-3.5" />
           New Proposal
         </Button>
@@ -126,6 +165,66 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
           </div>
         </div>
       </div>
+
+      {/* Upload overlay */}
+      {showUploadOverlay && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+          onClick={() => setShowUploadOverlay(false)}
+        >
+          <div
+            className="relative w-full max-w-md mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={() => setShowUploadOverlay(false)}
+              className="absolute -top-10 right-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {/* Drop zone */}
+            <div
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onClick={() => fileInputRef.current?.click()}
+              className={`
+                flex flex-col items-center justify-center gap-4 rounded-2xl
+                border-2 border-dashed cursor-pointer
+                px-8 py-16 transition-colors
+                ${isDraggingOver
+                  ? "border-green-500 bg-green-500/10"
+                  : "border-green-500/60 bg-card hover:border-green-500 hover:bg-green-500/5"
+                }
+              `}
+            >
+              <div className={`p-4 rounded-full transition-colors ${isDraggingOver ? "bg-green-500/20" : "bg-muted"}`}>
+                <Upload className={`h-8 w-8 transition-colors ${isDraggingOver ? "text-green-500" : "text-muted-foreground"}`} />
+              </div>
+              <div className="text-center space-y-1">
+                <p className="text-sm font-semibold text-foreground">
+                  Drop your Tender Document here
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  or click to browse — PDF, DOCX
+                </p>
+              </div>
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.docx,.doc"
+              onChange={handleFileInputChange}
+              className="hidden"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
