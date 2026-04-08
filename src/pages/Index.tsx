@@ -66,7 +66,7 @@ const Index = () => {
           )}
         </header>
 
-        {phase === "ingest" && <IngestPhase onAnalyze={handleAnalyze} />}
+        {phase === "ingest" && <IngestPhase />}
         {phase === "processing" && (
           <ProcessingPhase statusText={statusText} progress={progress} />
         )}
