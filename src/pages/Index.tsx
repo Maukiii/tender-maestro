@@ -3,18 +3,15 @@ import { KnowledgeSidebar } from "@/components/KnowledgeSidebar";
 import { AiChatPane } from "@/components/AiChatPane";
 import type { SelectionContext } from "@/components/AiChatPane";
 import { IngestPhase } from "@/components/IngestPhase";
-import { DocumentView } from "@/components/DocumentView";
 import { ProjectSelection } from "@/components/ProjectSelection";
 import { DEFAULT_SECTIONS } from "@/lib/proposalData";
 import type { ProposalSection } from "@/lib/proposalData";
-import { ArrowLeft, LayoutGrid, FileText } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 type View = "projects" | "editor";
-type EditorMode = "block" | "document";
 
 const Index = () => {
   const [view, setView] = useState<View>("projects");
-  const [editorMode, setEditorMode] = useState<EditorMode>("block");
   const [sections, setSections] = useState<ProposalSection[]>(DEFAULT_SECTIONS);
   const [selection, setSelection] = useState<SelectionContext | null>(null);
   const [scrollContainer, setScrollContainer] = useState<HTMLElement | null>(null);
@@ -65,47 +62,17 @@ const Index = () => {
           </button>
           <div className="h-5 w-px bg-border" />
           <h1 className="text-base font-semibold text-foreground">
-            {editorMode === "block" ? "Block View" : "Document View"}
+            Block View
           </h1>
-
-          <div className="ml-auto flex items-center gap-1 rounded-lg border border-border p-0.5 bg-muted">
-            <button
-              type="button"
-              onClick={() => setEditorMode("block")}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                editorMode === "block"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-              Blocks
-            </button>
-            <button
-              type="button"
-              onClick={() => setEditorMode("document")}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                editorMode === "document"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <FileText className="h-3.5 w-3.5" />
-              Document
-            </button>
-          </div>
         </header>
 
-        {editorMode === "block" ? (
-          <IngestPhase
-            sections={sections}
-            onUpdateBlock={handleUpdateBlock}
-            onTextSelect={handleTextSelect}
-            onScrollContainerReady={setScrollContainer}
-          />
-        ) : (
-          <DocumentView sections={sections} />
-        )}
+        <IngestPhase
+          sections={sections}
+          onUpdateBlock={handleUpdateBlock}
+          onTextSelect={handleTextSelect}
+          onScrollContainerReady={setScrollContainer}
+        />
+
       </main>
 
       <AiChatPane
