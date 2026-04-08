@@ -75,6 +75,8 @@ const Index = () => {
           <ReviewPhase draft={draft} onDraftUpdate={setDraft} />
         )}
       </main>
+
+      <AiChatPane />
     </div>
   );
 };
