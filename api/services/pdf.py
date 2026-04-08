@@ -50,8 +50,8 @@ def list_tenders() -> list[dict]:
     for path in sorted(TENDER_DIR.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True):
         if not path.is_file():
             continue
-        # Skip score sidecar files
-        if path.name.endswith("_score.json"):
+        # Skip JSON sidecar files (score, tender data)
+        if path.name.endswith("_score.json") or path.name.endswith("_tender.json"):
             continue
         parts = path.name.split("_", 1)
         if len(parts) != 2:
@@ -65,6 +65,26 @@ def list_tenders() -> list[dict]:
             "score": load_score(doc_id),
         })
     return result
+
+
+def save_tender_data(doc_id: str, tender_data: dict[str, Any]) -> None:
+    """Persist the tender extraction result as a JSON sidecar file."""
+    _ensure_dir()
+    (TENDER_DIR / f"{doc_id}_tender.json").write_text(
+        json.dumps(tender_data, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def load_tender_data(doc_id: str) -> dict[str, Any] | None:
+    """Load a previously extracted tender, or None if not available."""
+    data_file = TENDER_DIR / f"{doc_id}_tender.json"
+    if not data_file.exists():
+        return None
+    try:
+        return json.loads(data_file.read_text(encoding="utf-8"))
+    except Exception:
+        return None
 
 
 def save_score(doc_id: str, score_data: dict[str, Any]) -> None:

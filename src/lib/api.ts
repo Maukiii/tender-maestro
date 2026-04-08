@@ -262,6 +262,50 @@ export async function listTenders(): Promise<UploadedTender[]> {
   }
 }
 
+// ─── Draft ────────────────────────────────────────────────────────────────────
+
+export interface DraftedSection {
+  section_id: string;
+  blocks: { title: string; markdown: string }[];
+}
+
+/**
+ * Run the 3-agent parallel drafting pipeline for a scored tender.
+ * Streams SSE status updates; resolves with the full sections array when done.
+ */
+export async function draftProposal(
+  documentId: string,
+  onStatus: (step: string, progress: number) => void,
+): Promise<DraftedSection[]> {
+  const res = await fetch(`${API_BASE}/tender/draft`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ documentId }),
+  });
+  if (!res.ok) throw new Error(`Draft request failed: ${res.status}`);
+  if (!res.body) throw new Error("No response body");
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
+    for (const line of lines) {
+      if (!line.startsWith("data: ")) continue;
+      const event = JSON.parse(line.slice(6));
+      if (event.type === "status") onStatus(event.step, event.progress);
+      else if (event.type === "result") return event.sections as DraftedSection[];
+      else if (event.type === "error") throw new Error(event.message);
+    }
+  }
+  throw new Error("Stream ended without a result");
+}
+
 /** Score a previously uploaded tender (runs the full extraction + scoring pipeline) */
 export async function scoreTender(documentId: string): Promise<TenderScore & { documentId: string }> {
   const res = await fetch(`${API_BASE}/tender/score`, {

@@ -1,0 +1,105 @@
+"""
+Cost Agent
+
+Estimates project costs for a specific tender and writes the Price Summary
+section block with a detailed day-rate breakdown.
+"""
+from __future__ import annotations
+
+import json
+from typing import Any
+
+from services.ai import generate_text
+
+# ── System prompt — edit this to change the agent's behaviour ─────────────────
+
+SYSTEM_PROMPT = """You are a Senior Bid Manager at Meridian Intelligence GmbH.
+Your task is to fill the PRICE SUMMARY section of a tender proposal.
+
+Use these standard day rates for Meridian's team:
+- Dr. Anna Becker (Project Director):   1,800 EUR/day
+- Marcus Weber (Data Science Lead):     1,400 EUR/day
+- Sofia Chen (Policy Lead):             1,600 EUR/day
+- Thomas Vogel (Technical Lead):        1,400 EUR/day
+
+Rules:
+- Base day allocations on the tender's stated duration and scope.
+- If a budget ceiling is stated, stay below it.
+- Include a contingency line (typically 5–10 % of labour costs).
+- Round totals to nearest 500 EUR.
+- Use the same team members that appear in the Team section.
+
+Return a JSON object — no markdown fences, just pure JSON:
+{
+  "section_id": "pricing",
+  "blocks": [
+    {
+      "title": "Price Breakdown",
+      "markdown": "| Item | Days | Day Rate (EUR) | Total (EUR) |\\n|------|------|----------------|-------------|\\n..."
+    }
+  ]
+}"""
+
+
+# ── Entry point ───────────────────────────────────────────────────────────────
+
+async def run_cost_agent(
+    tender_data: dict[str, Any],
+    kb_profile: dict[str, Any],
+    score_data: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """
+    Fill the Price Summary section for a tender.
+
+    Args:
+        tender_data:  Structured tender info from the extraction agent.
+        kb_profile:   Company KB (past project costs provide reference points).
+        score_data:   Optional scoring result (team_proposal gives day hints).
+
+    Returns:
+        Dict with keys: section_id, blocks (list of {title, markdown}).
+    """
+    tender_text = json.dumps(tender_data, indent=2, ensure_ascii=False, default=str)[:3000]
+
+    team_hint = ""
+    if score_data and score_data.get("team_proposal"):
+        team_hint = "\n\nPROPOSED TEAM (from scoring):\n" + json.dumps(
+            score_data["team_proposal"], indent=2, ensure_ascii=False, default=str
+        )[:1500]
+
+    # Include a few past project values as reference
+    past_projects = []
+    for doc in kb_profile.get("company_documents", []):
+        past_projects.extend(doc.get("projects", []))
+    ref_text = ""
+    if past_projects:
+        ref_text = "\n\nPAST PROJECT REFERENCE VALUES:\n" + json.dumps(
+            past_projects[:5], indent=2, ensure_ascii=False, default=str
+        )[:1500]
+
+    user_msg = "TENDER REQUIREMENTS:\n" + tender_text + team_hint + ref_text
+
+    raw = await generate_text(
+        messages=[{"role": "user", "content": user_msg}],
+        system=SYSTEM_PROMPT,
+        max_tokens=1024,
+    )
+
+    return _parse_json(raw)
+
+
+# ── Helper ────────────────────────────────────────────────────────────────────
+
+def _parse_json(raw: str) -> dict:
+    clean = raw.strip().lstrip("```json").lstrip("```").rstrip("```").strip()
+    try:
+        return json.loads(clean)
+    except json.JSONDecodeError:
+        start = raw.find("{")
+        end = raw.rfind("}") + 1
+        if start != -1 and end > start:
+            try:
+                return json.loads(raw[start:end])
+            except json.JSONDecodeError:
+                pass
+    raise RuntimeError(f"cost_agent returned invalid JSON. Raw: {raw[:300]}")

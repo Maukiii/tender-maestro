@@ -4,12 +4,14 @@ import { AiChatPane } from "@/components/AiChatPane";
 import type { SelectionContext } from "@/components/AiChatPane";
 import { IngestPhase } from "@/components/IngestPhase";
 import { ProjectSelection } from "@/components/ProjectSelection";
+import { ProcessingPhase } from "@/components/ProcessingPhase";
 import { DEFAULT_SECTIONS } from "@/lib/proposalData";
 import type { ProposalSection } from "@/lib/proposalData";
-import { SECTION_TEMPLATES } from "@/lib/sectionTemplates";
+import { SECTION_TEMPLATES, getTemplateById } from "@/lib/sectionTemplates";
+import { draftProposal } from "@/lib/api";
 import { ArrowLeft, FileText } from "lucide-react";
 
-type View = "projects" | "editor";
+type View = "projects" | "drafting" | "editor";
 
 let idCounter = 0;
 const genId = (prefix: string) => `${prefix}-${Date.now()}-${++idCounter}`;
@@ -19,6 +21,9 @@ export const Index = () => {
   const [sections, setSections] = useState<ProposalSection[]>(DEFAULT_SECTIONS);
   const [selection, setSelection] = useState<SelectionContext | null>(null);
   const [scrollContainer, setScrollContainer] = useState<HTMLElement | null>(null);
+  const [draftingStatus, setDraftingStatus] = useState("Starting agents…");
+  const [draftingProgress, setDraftingProgress] = useState(0);
+  const [draftingError, setDraftingError] = useState<string | null>(null);
 
   const handleUpdateBlock = useCallback((blockId: string, markdown: string) => {
     setSections((prev) =>
@@ -95,8 +100,83 @@ export const Index = () => {
     );
   }, []);
 
+  const handleSelectTender = useCallback(async (documentId: string) => {
+    setDraftingStatus("Starting agents…");
+    setDraftingProgress(0);
+    setDraftingError(null);
+    setView("drafting");
+
+    try {
+      const draftedSections = await draftProposal(documentId, (step, progress) => {
+        setDraftingStatus(step);
+        setDraftingProgress(progress);
+      });
+
+      // Map backend DraftedSection[] → ProposalSection[]
+      const built: ProposalSection[] = draftedSections.map((ds) => {
+        const template = getTemplateById(ds.section_id);
+        return {
+          id: genId("section"),
+          label: template?.label ?? ds.section_id,
+          icon: template?.icon ?? FileText,
+          blocks: ds.blocks.map((b) => ({
+            id: genId("block"),
+            title: b.title,
+            markdown: b.markdown,
+          })),
+        };
+      });
+
+      if (built.length > 0) {
+        setSections(built);
+        setView("editor");
+      } else {
+        setDraftingError("Agents returned no sections. Check the backend logs.");
+      }
+    } catch (err) {
+      console.error("[draftProposal] failed:", err);
+      setDraftingError(err instanceof Error ? err.message : String(err));
+    }
+  }, []);
+
   if (view === "projects") {
-    return <ProjectSelection onSelect={() => setView("editor")} />;
+    return <ProjectSelection onSelect={handleSelectTender} />;
+  }
+
+  if (view === "drafting") {
+    return (
+      <div className="flex min-h-screen w-full flex-col bg-background">
+        <header className="h-14 flex items-center gap-4 px-8 border-b border-border bg-card shrink-0">
+          <button
+            type="button"
+            onClick={() => setView("projects")}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Projects
+          </button>
+          <div className="h-5 w-px bg-border" />
+          <h1 className="text-base font-semibold text-foreground">Generating Proposal…</h1>
+        </header>
+        {draftingError ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-6 px-8">
+            <p className="text-base font-semibold text-destructive">Drafting failed</p>
+            <pre className="text-xs text-muted-foreground bg-muted rounded-lg px-4 py-3 max-w-lg whitespace-pre-wrap">
+              {draftingError}
+            </pre>
+            <button
+              type="button"
+              onClick={() => setView("projects")}
+              className="text-sm text-primary hover:underline"
+            >
+              ← Back to projects
+            </button>
+          </div>
+        ) : (
+          <ProcessingPhase statusText={draftingStatus} progress={draftingProgress} />
+        )}
+      </div>
+    );
   }
 
   return (

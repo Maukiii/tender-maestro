@@ -23,6 +23,10 @@ class ScoreRequest(BaseModel):
     documentId: str
 
 
+class DraftRequest(BaseModel):
+    documentId: str
+
+
 class ScoreResult(BaseModel):
     documentId: str
     decision: str                          # "BID" | "NO-BID"

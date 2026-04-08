@@ -5,8 +5,11 @@ import uuid
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse
 
+from agents.cost_agent import run_cost_agent
 from agents.kb_parser import load_kb_profile
 from agents.scoring_boss import run_scoring_boss
+from agents.sections_agent import run_sections_agent
+from agents.team_agent import run_team_agent
 from agents.tender_extraction_agent import run_tender_extractor_agent
 from models.schemas import (
     AnalyzeRequest,
@@ -14,6 +17,7 @@ from models.schemas import (
     RevisionResult,
     ScoreRequest,
     ScoreResult,
+    DraftRequest,
     GenerateSectionRequest,
     GenerateSectionResult,
     ProposalBlock,
@@ -71,7 +75,8 @@ async def score_tender(request: ScoreRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Scoring failed: {e}")
 
-    # Persist so the /list endpoint can serve it without re-scoring
+    # Persist both extraction result (for /draft) and score
+    pdf.save_tender_data(request.documentId, tender_data)
     pdf.save_score(request.documentId, score_raw)
 
     return ScoreResult(
@@ -84,6 +89,89 @@ async def score_tender(request: ScoreRequest):
         ko_criterion_triggered=score_raw.get("ko_criterion_triggered"),
         team_proposal=score_raw.get("team_proposal", []),
     )
+
+
+# ── Draft (3-agent parallel proposal generation) ─────────────────────────────
+
+@router.post("/draft")
+async def draft_proposal(request: DraftRequest):
+    """
+    Streams SSE events while 3 agents build the proposal in parallel:
+      - team_agent      → Team section
+      - cost_agent      → Price Summary section
+      - sections_agent  → Executive Summary, Problem Framing, Methodology, Workplan
+
+    SSE event types:
+      {"type": "status",  "step": "...", "progress": 0-100}
+      {"type": "result",  "sections": [...]}
+      {"type": "error",   "message": "..."}
+    """
+
+    async def event_stream():
+        def _status(step: str, progress: int) -> str:
+            return f"data: {json.dumps({'type': 'status', 'step': step, 'progress': progress})}\n\n"
+
+        # ── 1. Load tender data ────────────────────────────────────────────
+        file_path = pdf.get_upload_path(request.documentId)
+        if file_path is None:
+            yield f"data: {json.dumps({'type': 'error', 'message': 'Tender file not found.'})}\n\n"
+            return
+
+        yield _status("Loading tender data…", 10)
+
+        tender_data = pdf.load_tender_data(request.documentId)
+        if tender_data is None:
+            # Re-extract if not cached (e.g. uploaded before scoring)
+            try:
+                tender_data = await run_tender_extractor_agent(file_path)
+                pdf.save_tender_data(request.documentId, tender_data)
+            except Exception as e:
+                yield f"data: {json.dumps({'type': 'error', 'message': f'Extraction failed: {e}'})}\n\n"
+                return
+
+        score_data = pdf.load_score(request.documentId)
+        kb_profile = load_kb_profile()
+
+        # ── 2. Run all 3 agents in parallel ───────────────────────────────
+        yield _status("Team · Cost · Sections agents running in parallel…", 25)
+
+        try:
+            team_result, cost_result, sections_result = await asyncio.gather(
+                run_team_agent(tender_data, kb_profile),
+                run_cost_agent(tender_data, kb_profile, score_data),
+                run_sections_agent(tender_data, kb_profile),
+            )
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': f'Agent failed: {e}'})}\n\n"
+            return
+
+        # ── 3. Assemble into ordered sections list ─────────────────────────
+        yield _status("Assembling proposal…", 90)
+
+        sections = []
+
+        # Sections agent fills: exec-summary, problem-framing, methodology, workplan
+        for sec in sections_result.get("sections", []):
+            sections.append({
+                "section_id": sec.get("section_id", ""),
+                "blocks": sec.get("blocks", []),
+            })
+
+        # Team agent
+        sections.append({
+            "section_id": team_result.get("section_id", "team"),
+            "blocks": team_result.get("blocks", []),
+        })
+
+        # Cost agent
+        sections.append({
+            "section_id": cost_result.get("section_id", "pricing"),
+            "blocks": cost_result.get("blocks", []),
+        })
+
+        yield f"data: {json.dumps({'type': 'result', 'sections': sections})}\n\n"
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
 # ── Analyze (SSE draft generation) ───────────────────────────────────────────

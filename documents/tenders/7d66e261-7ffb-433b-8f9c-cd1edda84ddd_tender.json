@@ -1,0 +1,47 @@
+{
+  "title": "Mapping and Continuous Monitoring of the European AI Ecosystem",
+  "client": "European Commission, Directorate-General for Communications Networks, Content and Technology (DG CNECT)",
+  "reference": "EC-CNECT/2025/OP/0034",
+  "deadline": "30 May 2025, 17:00 CET",
+  "budget_eur": 3200000,
+  "duration_months": 36,
+  "topic_areas": [
+    "Artificial Intelligence ecosystem mapping",
+    "AI market surveillance",
+    "EU AI Act implementation",
+    "Digital policy and regulation",
+    "Data collection and classification",
+    "Supply chain analysis",
+    "SME and industrial ecosystem analysis"
+  ],
+  "required_certifications": [],
+  "required_languages": [
+    "EN"
+  ],
+  "requires_primary_fieldwork": false,
+  "key_requirements": [
+    "Systematic identification and mapping of all AI-relevant organizations across all 27 EU member states",
+    "Coverage of AI system developers, deployers, GPAI model providers, conformity assessment bodies, and public sector bodies",
+    "Classification of organizations by AI risk category (per AI Act Annex III), sector, geography, company size, and role in the AI value chain",
+    "Mapping of supply chain and subcontracting relationships between AI developers and deployers, including cross-border dependencies",
+    "Continuous monitoring capability: monthly new entrant identification, quarterly portfolio change detection, quarterly M&A tracking, semi-annual concentration alerts, annual trend analysis",
+    "Methodology must go beyond commercial registries and self-reported classifications; must identify organizations via technical signals (job postings, API offerings, procurement notices, patent filings, etc.)",
+    "Evidence-based classification derived from observable, verifiable sources (website content, technical documentation, procurement records, etc.)",
+    "Quality assurance and false-positive rejection procedures must be described",
+    "Full methodological transparency and reproducibility; all steps documented for independent replication",
+    "Inception Report submitted within 6 weeks of contract signature and approved before substantive work begins",
+    "Core organization list refreshed quarterly; full indicator profiles updated annually",
+    "Ad-hoc expedited update requests addressed within 10 working days",
+    "Structured, machine-readable datasets (JSON/CSV) with accompanying data dictionaries",
+    "Delivery of four sector deep-dive analytical reports on high-risk AI sectors selected by the Commission",
+    "Capacity building for DG CNECT staff including methodology documentation, training sessions, and at least two facilitated workshops",
+    "Project manager with EU-funded research or consultancy experience of comparable scope",
+    "At least one methodological expert in web-based or AI-driven organizational data collection and classification",
+    "At least one sector specialist with expertise in EU digital policy and the AI Act",
+    "Data engineering capacity to maintain and deliver structured datasets at required update frequency",
+    "At least one expert in SME and industrial ecosystem analysis in the EU context",
+    "Subcontracting arrangements permitted with appropriate disclosure"
+  ],
+  "evaluation_criteria": [],
+  "summary": "The European Commission's DG CNECT is procuring a service contract to systematically map and continuously monitor the European AI ecosystem across all 27 EU member states, in support of AI Act implementation and EU AI policy. The contractor must identify, classify, and profile AI-relevant organizations — including developers, deployers, GPAI providers, and conformity assessment bodies — using evidence-based, reproducible methodologies that capture actors not visible in standard commercial databases. Key deliverables include a baseline dataset, quarterly monitoring reports, sector deep-dives, annual trend analyses, and a capacity-building package for Commission staff, all to be delivered over a maximum period of 36 months for an estimated value of EUR 3,200,000."
+}
