@@ -1,15 +1,24 @@
 /**
  * API Abstraction Layer
- * 
- * All mock functions simulate async API calls.
- * Replace the implementations with actual fetch/axios calls
- * to your Python/FastAPI backend.
- * 
- * Base URL can be configured via environment variable:
- *   VITE_API_BASE_URL=https://your-api.example.com
+ *
+ * Every function tries the Python backend first (http://localhost:8000).
+ * If the backend is unreachable (e.g. running via Lovable, or backend not started),
+ * it automatically falls back to the mock implementation so the app keeps working.
+ *
+ * Start the backend with:  make backend   (or  make dev  for both)
+ * Browse API docs at:      http://localhost:8000/docs
  */
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+
+// Returns true when the backend is simply not reachable (not a logic error).
+// Catches Chrome "Failed to fetch", Firefox "NetworkError when attempting to fetch resource",
+// and Safari "Load failed" — all thrown as TypeErrors on network/CORS/mixed-content failures.
+function isOffline(e: unknown): boolean {
+  if (!(e instanceof TypeError)) return false;
+  const msg = e.message.toLowerCase();
+  return msg.includes("fetch") || msg.includes("load failed") || msg.includes("networkerror");
+}
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -38,6 +47,17 @@ export interface RevisionRequest {
 export interface RevisionResult {
   markdown: string;
   agentMessage: string;
+}
+
+export interface SelectionContext {
+  text: string;
+  blockTitle?: string;
+  sectionLabel?: string;
+}
+
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
 }
 
 // ─── Mock Data ───────────────────────────────────────────────────────
@@ -167,63 +187,191 @@ Our delivery follows a streamlined Agile methodology in two focused phases:
 *This proposal is valid for 90 days from the date of submission.*
 `;
 
-// ─── API Functions ───────────────────────────────────────────────────
+// ─── Knowledge Base ───────────────────────────────────────────────────
 
 /** Fetch knowledge base stats */
 export async function fetchKnowledgeStats(): Promise<KnowledgeStats> {
-  // TODO: Replace with: GET ${API_BASE}/knowledge/stats
-  await delay(300);
-  return {
-    pastTenders: 45,
-    teamCVs: 12,
-    policyDocs: 8,
-    templateLibrary: 23,
-  };
+  try {
+    const res = await fetch(`${API_BASE}/knowledge/stats`);
+    if (!res.ok) throw new Error(`${res.status}`);
+    return res.json();
+  } catch (e) {
+    if (isOffline(e)) {
+      await delay(300);
+      return { pastTenders: 45, teamCVs: 12, policyDocs: 8, templateLibrary: 23 };
+    }
+    throw e;
+  }
 }
 
 /** Upload a knowledge document to the vector store */
-export async function uploadKnowledgeDocument(_file: File): Promise<{ success: boolean }> {
-  // TODO: Replace with: POST ${API_BASE}/knowledge/upload (multipart/form-data)
-  await delay(2000);
-  return { success: true };
+export async function uploadKnowledgeDocument(file: File): Promise<{ success: boolean }> {
+  try {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`${API_BASE}/knowledge/upload`, { method: "POST", body: form });
+    if (!res.ok) throw new Error(`${res.status}`);
+    return res.json();
+  } catch (e) {
+    if (isOffline(e)) {
+      await delay(2000);
+      return { success: true };
+    }
+    throw e;
+  }
 }
+
+// ─── Tender ───────────────────────────────────────────────────────────
 
 /** Upload the tender PDF for analysis */
-export async function uploadTenderDocument(_file: File): Promise<{ documentId: string }> {
-  // TODO: Replace with: POST ${API_BASE}/tender/upload
-  await delay(500);
-  return { documentId: "mock-doc-123" };
+export async function uploadTenderDocument(file: File): Promise<{ documentId: string }> {
+  try {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`${API_BASE}/tender/upload`, { method: "POST", body: form });
+    if (!res.ok) throw new Error(`${res.status}`);
+    return res.json();
+  } catch (e) {
+    if (isOffline(e)) {
+      await delay(500);
+      return { documentId: "mock-doc-123" };
+    }
+    throw e;
+  }
 }
 
-/** Analyze tender and generate draft — streams status updates via callback */
+/**
+ * Analyze tender and generate draft.
+ * When the backend is running: streams real SSE status updates and uses AI.
+ * When offline: uses the original mock simulation.
+ */
 export async function analyzeTender(
-  _documentId: string,
+  documentId: string,
   onStatus: (status: AnalysisStatus) => void
 ): Promise<DraftResult> {
-  // TODO: Replace with: POST ${API_BASE}/tender/analyze (SSE or polling)
-  const steps = [
-    "Extracting requirements...",
-    "Scoring tender fit...",
-    "Retrieving past project context...",
-    "Drafting initial response...",
-  ];
+  try {
+    const res = await fetch(`${API_BASE}/tender/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ documentId }),
+    });
+    if (!res.ok) throw new Error(`${res.status}`);
+    if (!res.body) throw new Error("no body");
 
-  for (let i = 0; i < steps.length; i++) {
-    onStatus({ step: steps[i], progress: ((i + 1) / steps.length) * 100 });
-    await delay(1500);
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const event = JSON.parse(line.slice(6));
+        if (event.type === "status") onStatus({ step: event.step, progress: event.progress });
+        else if (event.type === "result") return { markdown: event.markdown, score: event.score };
+        else if (event.type === "error") throw new Error(event.message);
+      }
+    }
+    throw new Error("Stream ended without result");
+  } catch (e) {
+    if (isOffline(e)) {
+      // Mock fallback: simulate progress steps
+      const steps = [
+        "Extracting requirements...",
+        "Scoring tender fit...",
+        "Retrieving past project context...",
+        "Drafting initial response...",
+      ];
+      for (let i = 0; i < steps.length; i++) {
+        onStatus({ step: steps[i], progress: ((i + 1) / steps.length) * 100 });
+        await delay(1500);
+      }
+      return { markdown: MOCK_DRAFT, score: 87 };
+    }
+    throw e;
   }
-
-  return { markdown: MOCK_DRAFT, score: 87 };
 }
 
-/** Send a revision instruction to the agent */
-export async function reviseDraft(_request: RevisionRequest): Promise<RevisionResult> {
-  // TODO: Replace with: POST ${API_BASE}/tender/revise
-  await delay(2000);
-  return {
-    markdown: MOCK_REVISED_DRAFT,
-    agentMessage: "Done. I have updated the draft to reflect those constraints.",
-  };
+/** Send a revision instruction to the AI agent */
+export async function reviseDraft(request: RevisionRequest): Promise<RevisionResult> {
+  try {
+    const res = await fetch(`${API_BASE}/tender/revise`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    });
+    if (!res.ok) throw new Error(`${res.status}`);
+    return res.json();
+  } catch (e) {
+    if (isOffline(e)) {
+      await delay(2000);
+      return {
+        markdown: MOCK_REVISED_DRAFT,
+        agentMessage: "Done. I have updated the draft to reflect those constraints.",
+      };
+    }
+    throw e;
+  }
+}
+
+// ─── Chat (AI showcase) ───────────────────────────────────────────────
+//
+// Streams an AI response chunk by chunk when the backend is running.
+// Falls back to a canned mock response when offline.
+//
+// Usage:
+//   for await (const chunk of streamChat("Improve this section", context, history)) {
+//     setReply(prev => prev + chunk);
+//   }
+
+export async function* streamChat(
+  message: string,
+  context?: SelectionContext,
+  history?: ChatMessage[]
+): AsyncGenerator<string> {
+  try {
+    const res = await fetch(`${API_BASE}/chat/stream`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, context, history }),
+    });
+    if (!res.ok) throw new Error(`${res.status}`);
+    if (!res.body) throw new Error("no body");
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const event = JSON.parse(line.slice(6));
+        if (event.type === "chunk") yield event.content as string;
+        else if (event.type === "done") return;
+        else if (event.type === "error") throw new Error(event.message);
+      }
+    }
+  } catch (e) {
+    if (isOffline(e)) {
+      // Mock fallback: stream a canned reply word by word
+      const reply = "The AI assistant is available when the backend is running. Start it with `make dev`, then add your API key to `api/.env`.";
+      for (const word of reply.split(" ")) {
+        yield word + " ";
+        await delay(60);
+      }
+      return;
+    }
+    throw e;
+  }
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────
@@ -232,5 +380,4 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Export API_BASE for reference in documentation
 export { API_BASE };

@@ -72,9 +72,17 @@ async def _stream_anthropic(
     if system:
         kwargs["system"] = system
 
-    async with client.messages.stream(**kwargs) as stream:
-        async for text in stream.text_stream:
-            yield text
+    try:
+        async with client.messages.stream(**kwargs) as stream:
+            async for text in stream.text_stream:
+                yield text
+    except anthropic.APIStatusError as e:
+        body = getattr(e, "body", None)
+        if isinstance(body, dict):
+            msg = body.get("error", {}).get("message", str(e))
+        else:
+            msg = str(e)
+        raise RuntimeError(msg)
 
 
 # ── OpenAI ────────────────────────────────────────────────────────────────────

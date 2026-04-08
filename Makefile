@@ -1,4 +1,4 @@
-.PHONY: dev frontend backend install setup
+.PHONY: dev frontend backend install setup kill
 
 VENV = api/.venv
 PYTHON = $(VENV)/bin/python
@@ -42,6 +42,12 @@ setup:
 	else \
 	  echo "api/.env already exists, skipping copy"; \
 	fi
+
+# Kill any stale backend/frontend processes (use when "address already in use")
+kill:
+	-lsof -ti :8000 | xargs kill -9 2>/dev/null
+	-lsof -ti :8080 | xargs kill -9 2>/dev/null
+	@echo "Ports 8000 and 8080 cleared."
 
 # Install/update dependencies only (venv must already exist)
 install:

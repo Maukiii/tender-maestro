@@ -1,11 +1,13 @@
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# Load api/.env (works whether you run from project root or api/ directory)
-load_dotenv()
+# Always load the .env that sits next to this file, regardless of CWD.
+# This works whether you start uvicorn from the project root or from api/.
+load_dotenv(Path(__file__).parent / ".env")
 
 from routers import chat, knowledge, tender
 
@@ -16,11 +18,16 @@ app = FastAPI(
 )
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
-_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:8080,http://localhost:5173")
+# Default is "*" so the backend works from any origin (Lovable preview, local dev, etc.).
+# Set ALLOWED_ORIGINS to a comma-separated list to restrict to specific origins.
+# Note: allow_credentials=True is incompatible with allow_origins=["*"] in CORS spec.
+_origins_raw = os.getenv("ALLOWED_ORIGINS", "*")
+_allow_all = _origins_raw.strip() == "*"
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[o.strip() for o in _origins.split(",")],
-    allow_credentials=True,
+    allow_origins=["*"] if _allow_all else [o.strip() for o in _origins_raw.split(",")],
+    allow_credentials=not _allow_all,
     allow_methods=["*"],
     allow_headers=["*"],
 )
