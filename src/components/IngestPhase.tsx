@@ -9,10 +9,22 @@ interface IngestPhaseProps {
   blocks: ProposalBlock[];
   sectionLabel: string;
   onUpdateBlock: (blockId: string, markdown: string) => void;
+  onTextSelect: (text: string, blockTitle: string) => void;
 }
 
-export function IngestPhase({ blocks, sectionLabel, onUpdateBlock }: IngestPhaseProps) {
+export function IngestPhase({ blocks, sectionLabel, onUpdateBlock, onTextSelect }: IngestPhaseProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  const handleMouseUp = useCallback(
+    (blockTitle: string) => {
+      const sel = window.getSelection();
+      const text = sel?.toString().trim();
+      if (text && text.length > 0) {
+        onTextSelect(text, blockTitle);
+      }
+    },
+    [onTextSelect]
+  );
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
@@ -55,12 +67,20 @@ export function IngestPhase({ blocks, sectionLabel, onUpdateBlock }: IngestPhase
                     autoFocus
                     value={block.markdown}
                     onChange={(e) => onUpdateBlock(block.id, e.target.value)}
+                    onMouseUp={() => handleMouseUp(block.title)}
                     placeholder={`Write ${block.title.toLowerCase()} content…`}
                     className="min-h-[120px] resize-y border-none bg-muted/30 text-sm leading-relaxed font-mono focus-visible:ring-1 focus-visible:ring-primary/30"
                   />
                 ) : (
                   <div
-                    onClick={() => setEditingId(block.id)}
+                    onClick={() => {
+                      // Only switch to edit if no text is being selected
+                      const sel = window.getSelection();
+                      if (!sel || sel.toString().trim().length === 0) {
+                        setEditingId(block.id);
+                      }
+                    }}
+                    onMouseUp={() => handleMouseUp(block.title)}
                     className="prose prose-sm max-w-none text-foreground cursor-text rounded-lg px-3 py-2 bg-muted/30 min-h-[60px]
                       prose-headings:text-foreground prose-strong:text-foreground prose-a:text-primary
                       prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-p:my-1"

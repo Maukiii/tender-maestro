@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { KnowledgeSidebar } from "@/components/KnowledgeSidebar";
 import { AiChatPane } from "@/components/AiChatPane";
+import type { SelectionContext } from "@/components/AiChatPane";
 import { IngestPhase } from "@/components/IngestPhase";
 import { ProjectSelection } from "@/components/ProjectSelection";
 import { DEFAULT_SECTIONS } from "@/lib/proposalData";
@@ -13,6 +14,7 @@ const Index = () => {
   const [view, setView] = useState<View>("projects");
   const [sections, setSections] = useState<ProposalSection[]>(DEFAULT_SECTIONS);
   const [activeSectionId, setActiveSectionId] = useState(DEFAULT_SECTIONS[0].id);
+  const [selection, setSelection] = useState<SelectionContext | null>(null);
 
   const activeSection = sections.find((s) => s.id === activeSectionId) ?? sections[0];
 
@@ -25,6 +27,10 @@ const Index = () => {
         ),
       }))
     );
+  }, []);
+
+  const handleTextSelect = useCallback((text: string, blockTitle: string) => {
+    setSelection({ text, blockTitle });
   }, []);
 
   if (view === "projects") {
@@ -59,10 +65,14 @@ const Index = () => {
           blocks={activeSection.blocks}
           sectionLabel={activeSection.label}
           onUpdateBlock={handleUpdateBlock}
+          onTextSelect={handleTextSelect}
         />
       </main>
 
-      <AiChatPane />
+      <AiChatPane
+        selection={selection}
+        onClearSelection={() => setSelection(null)}
+      />
     </div>
   );
 };
