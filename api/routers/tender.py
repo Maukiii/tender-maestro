@@ -1,10 +1,19 @@
 import asyncio
 import json
+import uuid
 
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse
 
-from models.schemas import AnalyzeRequest, RevisionRequest, RevisionResult
+from models.schemas import (
+    AnalyzeRequest,
+    RevisionRequest,
+    RevisionResult,
+    GenerateSectionRequest,
+    GenerateSectionResult,
+    ProposalBlock,
+)
+from models.section_templates import get_template_by_id, get_template_by_label
 from services import ai, pdf
 
 router = APIRouter()
@@ -107,3 +116,59 @@ async def revise_draft(request: RevisionRequest):
         markdown=revised.strip(),
         agentMessage=f"Done. I've updated the draft: {request.instruction}",
     )
+
+
+@router.post("/generate-section", response_model=GenerateSectionResult)
+async def generate_section(request: GenerateSectionRequest):
+    """
+    Returns pre-structured blocks for a given section type.
+
+    The backend looks up the canonical template, optionally enriches
+    the scaffold markdown via AI (if tenderContext is provided), and
+    returns ready-to-use blocks.
+
+    Frontend can call this when the user adds a new section to get
+    properly structured blocks instantly.
+    """
+    template = get_template_by_id(request.sectionLabel) or get_template_by_label(
+        request.sectionLabel
+    )
+    if not template:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No template found for section '{request.sectionLabel}'",
+        )
+
+    blocks: list[ProposalBlock] = []
+    for bt in template.blocks:
+        block_id = f"block-{uuid.uuid4().hex[:8]}"
+        markdown = bt.markdown
+
+        # If tender context is provided, ask the AI to fill the scaffold
+        if request.tenderContext and request.tenderContext.strip():
+            system = (
+                "You are an expert tender writer. Fill in the following section block "
+                "using the provided tender context. Keep the existing structure (especially tables). "
+                "Return ONLY the markdown content."
+            )
+            user_msg = (
+                f"Section: {template.label}\n"
+                f"Block: {bt.title_suffix}\n"
+                f"Scaffold:\n{bt.markdown}\n\n"
+                f"Tender context:\n{request.tenderContext[:4000]}\n\n"
+                "Fill in the content. Return ONLY markdown."
+            )
+            try:
+                markdown = await ai.generate_text(
+                    messages=[{"role": "user", "content": user_msg}],
+                    system=system,
+                    max_tokens=2048,
+                )
+            except Exception:
+                pass  # fall back to scaffold
+
+        blocks.append(
+            ProposalBlock(id=block_id, title=bt.title_suffix, markdown=markdown)
+        )
+
+    return GenerateSectionResult(blocks=blocks)

@@ -9,6 +9,8 @@ import type {
   DraftResult,
   RevisionRequest,
   RevisionResult,
+  GenerateSectionRequest,
+  GenerateSectionResult,
 } from "@/types/tender";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
@@ -201,6 +203,38 @@ export async function reviseDraft(request: RevisionRequest): Promise<RevisionRes
   return {
     markdown: MOCK_REVISED_DRAFT,
     agentMessage: "Done. I have updated the draft to reflect those constraints.",
+  };
+}
+
+/**
+ * Generate pre-structured blocks for a section type.
+ * POST /tender/generate-section
+ */
+export async function generateSectionBlocks(
+  request: GenerateSectionRequest,
+): Promise<GenerateSectionResult> {
+  // TODO: replace mock with real call once backend is live
+  // const res = await fetch(`${API_BASE}/tender/generate-section`, {
+  //   method: "POST",
+  //   headers: { "Content-Type": "application/json" },
+  //   body: JSON.stringify(request),
+  // });
+  // if (!res.ok) throw new Error(`Failed: ${res.status}`);
+  // return res.json();
+
+  await delay(300);
+  // Fall back to template lookup on client side for now
+  const { getTemplateByLabel, getTemplateById } = await import("@/lib/sectionTemplates");
+  const template = getTemplateById(request.sectionLabel) ?? getTemplateByLabel(request.sectionLabel);
+  if (!template) {
+    return { blocks: [{ id: `block-${Date.now()}`, title: "Untitled Block", markdown: "" }] };
+  }
+  return {
+    blocks: template.blocks.map((bt, i) => ({
+      id: `block-${Date.now()}-${i}`,
+      title: bt.titleSuffix,
+      markdown: bt.markdown,
+    })),
   };
 }
 
