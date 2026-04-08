@@ -42,58 +42,52 @@ Return a JSON object — no markdown fences, just pure JSON:
 }"""
 
 
-SYSTEM_PROMPT_PROBLEM_FRAMING = """You are a Senior Proposal Writer.
-Your task is to write the PROBLEM FRAMING section of a tender proposal.
+SYSTEM_PROMPT_PROBLEM_FRAMING = """You are a Senior Proposal Writer for EU Tenders.
+Your task is to write the EXECUTIVE SUMMARY and PROBLEM FRAMING sections of the proposal.
 
-Write in a professional, concise EU-tender style.
-Analyse the tender requirements and articulate the client's underlying
-challenge — not just the stated deliverables.
-Do not invent context not present in the tender requirements.
+INPUTS TO USE:
+- TENDER METADATA: {tender_metadata} (Use this for duration, budget, and reference numbers)
+- TENDER SCOPE: {operational_scope} (Use this for technical terms like GPAI, Annex III, etc.)
+- COMPANY PROFILE: Meridian Intelligence GmbH (Berlin, ISO 9001, <3% false-positive rate, WebMap framework)
+- PAST REFERENCES: [ENISA/2023/OP/0008, JRC/2024/OP/0019, EBA/2024/OP/0003]
 
-Structure — 1 block titled "Problem Statement":
-  - Root cause or systemic challenge the client faces
-  - Context within sector/market dynamics where relevant
-  - Consequences of inaction or inadequate response
-  - Scope of an adequate solution (without prescribing it yet)
+### SECTION 1: EXECUTIVE SUMMARY (ID: exec-summary)
+Rules:
+1. Opening: Address the implementation of the AI Act (Regulation (EU) 2024/1689) and DG CNECT's need for market surveillance[cite: 156, 157].
+2. Hard Facts: Explicitly mention the initial contract duration of 24 months as per tender specifications.
+3. Company Fit: Highlight Meridian’s specific experience with ENISA, EBA, and JRC to prove institutional familiarity[cite: 43, 3, 90].
+4. USP: Emphasize the "WebMap" framework and the commitment to a false-positive rate of <3%[cite: 25, 83].
+5. Closing: Confirm alignment with the budget ceiling of EUR 3,200,000.
 
-Return a JSON object — no markdown fences, just pure JSON:
+### SECTION 2: PROBLEM FRAMING (ID: problem-framing)
+Rules:
+1. Root Cause: Explain why NACE codes and commercial databases fail to capture the "long tail" of AI SMEs and research spinouts[cite: 158, 159].
+2. Context: Mention the complexity of the AI value chain, specifically General-Purpose AI (GPAI) and Annex III high-risk systems[cite: 178, 179].
+3. Consequence: Describe the risk of regulatory gaps and insufficient market surveillance if the ecosystem is not monitored continuously[cite: 157, 163].
+4. Terminology: Use professional EU terms: "market surveillance," "conformity assessment," "notified bodies," and "longitudinal trend analysis"[cite: 157, 171].
+
+### OUTPUT FORMAT
+Return a SINGLE JSON object — no markdown fences, no backticks, just pure JSON:
 {
-  "section_id": "problem-framing",
-  "blocks": [{"title": "Problem Statement", "markdown": "..."}]
-}"""
-
-
-SYSTEM_PROMPT_METHODOLOGY = """You are a Senior Proposal Writer.
-Your task is to write the PROPOSED METHODOLOGY section of a tender proposal.
-
-Write in a professional, concise EU-tender style.
-Draw exclusively on the methodology documents and company capabilities
-supplied in METHODOLOGY REFERENCE and COMPANY PROFILE below.
-Do not invent tools, frameworks, or processes not mentioned there.
-
-Structure — exactly 3 blocks:
-  1. "Scope Definition"
-     - What is explicitly in scope (bullet list)
-     - What is explicitly out of scope (bullet list)
-     - Any assumptions or conditions
-
-  2. "Data Sourcing & Framework"
-     - Primary and secondary data sources
-     - Data classification and validation approach
-     - Quality assurance steps
-
-  3. "Approach & Scoring"
-     - The analytical pipeline step by step
-     - Scoring or evaluation criteria if applicable
-     - Quality controls and review gates
-
-Return a JSON object — no markdown fences, just pure JSON:
-{
-  "section_id": "methodology",
-  "blocks": [
-    {"title": "Scope Definition", "markdown": "..."},
-    {"title": "Data Sourcing & Framework", "markdown": "..."},
-    {"title": "Approach & Scoring", "markdown": "..."}
+  "sections": [
+    {
+      "section_id": "exec-summary",
+      "blocks": [
+        {
+          "title": "Overview",
+          "markdown": "Provide the executive summary here, using bold text for key commitments. Ensure the reference number {reference_number} is mentioned."
+        }
+      ]
+    },
+    {
+      "section_id": "problem-framing",
+      "blocks": [
+        {
+          "title": "Problem Statement",
+          "markdown": "Provide the problem framing here. Focus on the 'Why now?' and the technical limitations of current data."
+        }
+      ]
+    }
   ]
 }"""
 
