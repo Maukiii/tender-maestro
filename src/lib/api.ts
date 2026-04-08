@@ -22,6 +22,12 @@ function isOffline(e: unknown): boolean {
 
 // ─── Types ───────────────────────────────────────────────────────────
 
+export interface UploadedTender {
+  id: string;
+  filename: string;
+  uploadedAt: string;
+}
+
 export interface KnowledgeStats {
   pastTenders: number;
   teamCVs: number;
@@ -223,6 +229,18 @@ export async function uploadKnowledgeDocument(file: File): Promise<{ success: bo
 }
 
 // ─── Tender ───────────────────────────────────────────────────────────
+
+/** List all uploaded tenders from documents/tenders/ */
+export async function listTenders(): Promise<UploadedTender[]> {
+  try {
+    const res = await fetch(`${API_BASE}/tender/list`);
+    if (!res.ok) throw new Error(`${res.status}`);
+    return res.json();
+  } catch (e) {
+    if (isOffline(e)) return [];
+    throw e;
+  }
+}
 
 /** Upload the tender PDF for analysis */
 export async function uploadTenderDocument(file: File): Promise<{ documentId: string }> {

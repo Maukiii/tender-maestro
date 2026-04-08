@@ -1,8 +1,9 @@
-import { useState, useCallback, useRef } from "react";
-import { FileText, Plus, Clock, ChevronRight, Upload, X, Target, TrendingUp, AlertTriangle } from "lucide-react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { FileText, Plus, Clock, ChevronRight, Upload, X, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { listTenders, uploadTenderDocument, type UploadedTender } from "@/lib/api";
 
-import type { TenderProject, IncomingTender } from "@/types/tender";
+import type { TenderProject } from "@/types/tender";
 
 const MOCK_PROJECTS: TenderProject[] = [
   {
@@ -39,92 +40,20 @@ const MOCK_PROJECTS: TenderProject[] = [
   },
 ];
 
-const MOCK_INCOMING_TENDERS: IncomingTender[] = [
-  {
-    id: "tender-1",
-    title: "National Data Analytics Platform",
-    client: "Federal Statistics Office",
-    deadline: "15 May 2026",
-    budgetRange: "€800K – €1.2M",
-    scores: [{ label: "A", value: 92 }, { label: "B", value: 85 }, { label: "C", value: 78 }],
-    matchReasons: ["Strong cloud expertise match", "Past experience with gov analytics", "Team capacity available"],
-    uploadedAt: "30 min ago",
-  },
-  {
-    id: "tender-2",
-    title: "Healthcare Records Digitisation",
-    client: "Regional Health Authority",
-    deadline: "28 Apr 2026",
-    budgetRange: "€400K – €600K",
-    scores: [{ label: "A", value: 74 }, { label: "B", value: 68 }, { label: "C", value: 81 }],
-    matchReasons: ["Good technical fit", "Limited healthcare domain experience"],
-    uploadedAt: "2 hours ago",
-  },
-  {
-    id: "tender-3",
-    title: "Border Control Biometrics Upgrade",
-    client: "Interior Ministry",
-    deadline: "10 Jun 2026",
-    budgetRange: "€1.5M – €2M",
-    scores: [{ label: "A", value: 45 }, { label: "B", value: 38 }, { label: "C", value: 52 }],
-    matchReasons: ["Biometrics not a core competency", "Scale exceeds typical projects"],
-    uploadedAt: "1 day ago",
-  },
-  {
-    id: "tender-4",
-    title: "Municipal ERP Consolidation",
-    client: "City of Hamburg",
-    deadline: "22 May 2026",
-    budgetRange: "€300K – €500K",
-    scores: [{ label: "A", value: 83 }, { label: "B", value: 90 }, { label: "C", value: 76 }],
-    matchReasons: ["ERP migration experience", "Strong local references", "Right team size"],
-    uploadedAt: "3 hours ago",
-  },
-];
-
-function getScoreColor(score: number): string {
-  if (score >= 80) return "text-emerald-500";
-  if (score >= 60) return "text-amber-500";
-  return "text-red-400";
-}
-
-function getScoreBg(score: number): string {
-  if (score >= 80) return "bg-emerald-500/10 border-emerald-500/20";
-  if (score >= 60) return "bg-amber-500/10 border-amber-500/20";
-  return "bg-red-400/10 border-red-400/20";
-}
-
-function getScoreLabel(score: number): string {
-  if (score >= 80) return "Strong Fit";
-  if (score >= 60) return "Moderate Fit";
-  return "Weak Fit";
-}
-
-function ScoreRing({ score, label, size = "md" }: { score: number; label?: string; size?: "sm" | "md" }) {
-  const dims = size === "sm" ? { w: 10, r: 14, sw: 2.5, vb: 36, text: "text-[10px]" } : { w: 12, r: 18, sw: 3, vb: 44, text: "text-xs" };
-  const circumference = 2 * Math.PI * dims.r;
-  const offset = circumference - (score / 100) * circumference;
-  const center = dims.vb / 2;
-
-  return (
-    <div className="flex flex-col items-center gap-1 shrink-0">
-      <div className={`relative flex items-center justify-center w-${dims.w} h-${dims.w}`} style={{ width: dims.w * 4, height: dims.w * 4 }}>
-        <svg className="-rotate-90" style={{ width: dims.w * 4, height: dims.w * 4 }} viewBox={`0 0 ${dims.vb} ${dims.vb}`}>
-          <circle cx={center} cy={center} r={dims.r} fill="none" stroke="currentColor" strokeWidth={dims.sw} className="text-muted/30" />
-          <circle
-            cx={center} cy={center} r={dims.r} fill="none"
-            strokeWidth={dims.sw} strokeLinecap="round"
-            stroke="currentColor"
-            className={getScoreColor(score)}
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
-          />
-        </svg>
-        <span className={`absolute ${dims.text} font-bold ${getScoreColor(score)}`}>{score}</span>
-      </div>
-      {label && <span className="text-[10px] text-muted-foreground font-medium">{label}</span>}
-    </div>
-  );
+function formatUploadedAt(iso: string): string {
+  try {
+    const date = new Date(iso);
+    const diff = Date.now() - date.getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins} min ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+    const days = Math.floor(hours / 24);
+    return `${days} day${days > 1 ? "s" : ""} ago`;
+  } catch {
+    return iso;
+  }
 }
 
 interface ProjectSelectionProps {
@@ -134,12 +63,33 @@ interface ProjectSelectionProps {
 export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
   const [showUploadOverlay, setShowUploadOverlay] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [tenders, setTenders] = useState<UploadedTender[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = useCallback((file: File) => {
-    console.log("Tender document uploaded:", file.name, file.type);
-    setShowUploadOverlay(false);
+  const refreshTenders = useCallback(async () => {
+    try {
+      const data = await listTenders();
+      setTenders(data);
+    } catch {
+      // backend not running — show empty list
+    }
   }, []);
+
+  useEffect(() => {
+    refreshTenders();
+  }, [refreshTenders]);
+
+  const handleFile = useCallback(async (file: File) => {
+    setUploading(true);
+    try {
+      await uploadTenderDocument(file);
+      await refreshTenders();
+    } finally {
+      setUploading(false);
+      setShowUploadOverlay(false);
+    }
+  }, [refreshTenders]);
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -165,12 +115,11 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) handleFile(file);
+      // reset so the same file can be re-uploaded if needed
+      e.target.value = "";
     },
     [handleFile]
   );
-
-  const avgScore = (t: IncomingTender) => Math.round(t.scores.reduce((s, c) => s + c.value, 0) / t.scores.length);
-  const sortedTenders = [...MOCK_INCOMING_TENDERS].sort((a, b) => avgScore(b) - avgScore(a));
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -199,7 +148,7 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
                 </h2>
               </div>
               <p className="text-sm text-muted-foreground">
-                AI-scored against your company profile. Click to start a proposal.
+                Upload a tender document to start a proposal.
               </p>
             </div>
 
@@ -208,9 +157,10 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => !uploading && fileInputRef.current?.click()}
               className={`
-                flex items-center gap-4 p-5 rounded-xl border-2 border-dashed cursor-pointer transition-colors
+                flex items-center gap-4 p-5 rounded-xl border-2 border-dashed transition-colors
+                ${uploading ? "opacity-60 cursor-wait" : "cursor-pointer"}
                 ${isDraggingOver
                   ? "border-primary bg-primary/5"
                   : "border-border hover:border-primary/40 hover:bg-accent/50"
@@ -221,7 +171,9 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
                 <Upload className={`h-5 w-5 transition-colors ${isDraggingOver ? "text-primary" : "text-muted-foreground"}`} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">Upload Tender Description</p>
+                <p className="text-sm font-semibold text-foreground">
+                  {uploading ? "Uploading…" : "Upload Tender Document"}
+                </p>
                 <p className="text-xs text-muted-foreground">Drop a PDF or DOCX here, or click to browse</p>
               </div>
             </div>
@@ -235,44 +187,38 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
             />
 
             {/* Tender cards */}
-            <div className="space-y-3">
-              {sortedTenders.map((tender) => (
-                <button
-                  key={tender.id}
-                  type="button"
-                  onClick={() => onSelect(tender.id)}
-                  className="w-full flex items-center gap-4 p-5 rounded-xl border border-border bg-card hover:shadow-md hover:border-primary/30 transition-all text-left group"
-                >
-                  <div className="flex items-center gap-3 shrink-0">
-                    {tender.scores.map((s) => (
-                      <ScoreRing key={s.label} score={s.value} label={s.label} size="sm" />
-                    ))}
-                  </div>
-
-                  <div className="flex-1 min-w-0 space-y-1.5">
-                    <h3 className="text-sm font-semibold text-foreground truncate">
-                      {tender.title}
-                    </h3>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>{tender.client}</span>
-                      <span>·</span>
-                      <span>{tender.budgetRange}</span>
-                      <span>·</span>
-                      <span>Due {tender.deadline}</span>
+            {tenders.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-6">
+                No tenders yet — upload one above.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {tenders.map((tender) => (
+                  <button
+                    key={tender.id}
+                    type="button"
+                    onClick={() => onSelect(tender.id)}
+                    className="w-full flex items-center gap-4 p-5 rounded-xl border border-border bg-card hover:shadow-md hover:border-primary/30 transition-all text-left group"
+                  >
+                    <div className="p-2.5 rounded-lg bg-accent shrink-0">
+                      <FileText className="h-5 w-5 text-accent-foreground" />
                     </div>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {tender.matchReasons.map((reason, i) => (
-                        <span key={i} className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                          {reason}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
 
-                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
-                </button>
-              ))}
-            </div>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <h3 className="text-sm font-semibold text-foreground truncate">
+                        {tender.filename}
+                      </h3>
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        <span>{formatUploadedAt(tender.uploadedAt)}</span>
+                      </div>
+                    </div>
+
+                    <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Separator */}
@@ -329,30 +275,33 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
       {showUploadOverlay && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
-          onClick={() => setShowUploadOverlay(false)}
+          onClick={() => !uploading && setShowUploadOverlay(false)}
         >
           <div
             className="relative w-full max-w-md mx-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              type="button"
-              onClick={() => setShowUploadOverlay(false)}
-              className="absolute -top-10 right-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Close"
-            >
-              <X className="h-5 w-5" />
-            </button>
+            {!uploading && (
+              <button
+                type="button"
+                onClick={() => setShowUploadOverlay(false)}
+                className="absolute -top-10 right-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
 
             <div
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => !uploading && fileInputRef.current?.click()}
               className={`
                 flex flex-col items-center justify-center gap-4 rounded-2xl
-                border-2 border-dashed cursor-pointer
+                border-2 border-dashed
                 px-8 py-16 transition-colors
+                ${uploading ? "opacity-60 cursor-wait" : "cursor-pointer"}
                 ${isDraggingOver
                   ? "border-green-500 bg-green-500/10"
                   : "border-green-500/60 bg-card hover:border-green-500 hover:bg-green-500/5"
@@ -364,21 +313,13 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
               </div>
               <div className="text-center space-y-1">
                 <p className="text-sm font-semibold text-foreground">
-                  Drop your Tender Document here
+                  {uploading ? "Uploading…" : "Drop your Tender Document here"}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  or click to browse — PDF, DOCX
+                  {uploading ? "Please wait" : "or click to browse — PDF, DOCX"}
                 </p>
               </div>
             </div>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.docx,.doc"
-              onChange={handleFileInputChange}
-              className="hidden"
-            />
           </div>
         </div>
       )}

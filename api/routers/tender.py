@@ -19,6 +19,12 @@ from services import ai, pdf
 router = APIRouter()
 
 
+@router.get("/list")
+async def list_tenders():
+    """Return all uploaded tenders from documents/tenders/."""
+    return pdf.list_tenders()
+
+
 @router.post("/upload")
 async def upload_tender(file: UploadFile = File(...)):
     content = await file.read()

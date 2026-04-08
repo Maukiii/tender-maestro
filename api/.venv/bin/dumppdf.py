@@ -1,4 +1,4 @@
-#!/Users/kirschenmannfabian/Library/Mobile Documents/com~apple~CloudDocs/Coding/IDEAProjects/tender-maestro/api/.venv/bin/python3.14
+#!/Users/kirschenmannfabian/Library/CloudStorage/GoogleDrive-fabi.kcm@gmail.com/My Drive/Barbie Q/Code/tender-maestro/api/.venv/bin/python3.13
 """Extract pdf structure in XML format"""
 
 import logging
