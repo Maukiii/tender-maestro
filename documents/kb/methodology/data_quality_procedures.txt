@@ -1,0 +1,132 @@
+MERIDIAN INTELLIGENCE GMBH
+DATA QUALITY AND VALIDATION PROCEDURES
+Internal Reference: MIG-QA-001 | Version 3.2 | Last updated: February 2025
+
+===========================================================
+1. PURPOSE AND SCOPE
+===========================================================
+
+This document describes Meridian Intelligence's standard procedures for ensuring the quality, accuracy, and consistency of organisational datasets delivered to clients. These procedures apply to all data collection, classification, and delivery activities regardless of the specific project or client.
+
+The procedures cover four stages of the data lifecycle:
+  (a) Ingestion and deduplication
+  (b) Entity verification and false-positive rejection
+  (c) Indicator derivation and validation
+  (d) Delivery and change tracking
+
+===========================================================
+2. INGESTION AND DEDUPLICATION
+===========================================================
+
+2.1 Source Prioritisation
+Meridian's data pipeline ingests from multiple source types ranked by reliability:
+  Tier 1: Official registries (national company registers, EU VAT databases, Eurostat FAME)
+  Tier 2: Organisational websites (primary domain, About/Products pages)
+  Tier 3: Secondary sources (LinkedIn, Crunchbase, news articles)
+  
+Tier 1 sources are used as the canonical authority for legal name, registration country, and company identifier. Tier 2 and 3 sources provide capability and activity signals only.
+
+2.2 Deduplication Protocol
+All ingested records are passed through a three-stage deduplication process:
+  Stage 1: Exact match on VAT number or national registration number
+  Stage 2: Fuzzy name matching (Jaro-Winkler threshold: 0.92) within same country
+  Stage 3: Domain-level matching (same primary web domain = same entity)
+
+Records flagged as probable duplicates are reviewed manually before merging. Merge decisions are logged with timestamp and reviewer ID.
+
+2.3 Coverage Monitoring
+Target coverage rates by entity size tier:
+  Large enterprises (250+ employees): >95% of relevant population
+  Medium enterprises (50-249 employees): >85%
+  Small enterprises (10-49 employees): >70%
+  Micro enterprises (<10 employees): best-effort; no coverage guarantee
+
+Coverage is estimated quarterly by comparing dataset counts against Eurostat Business Demography figures for relevant NACE codes and member states.
+
+===========================================================
+3. ENTITY VERIFICATION AND FALSE-POSITIVE REJECTION
+===========================================================
+
+3.1 Verification Workflow
+Each entity identified through automated classification is subject to a verification pass before inclusion in client deliverables. The verification pass checks:
+  (a) That the entity's primary web domain is active and reachable
+  (b) That at least one piece of hard evidence supports the classification
+  (c) That the entity is a genuine legal organisation (not a shell, holding, or redirect)
+  (d) That the country of establishment is correctly assigned
+
+3.2 Hard Evidence Requirements
+For an entity to be classified as relevant to a given market or category, at least one of the following evidence types must be present:
+  - Explicit product or service description on the entity's own website matching the classification criteria
+  - Procurement record naming the entity as a supplier or contractor in the relevant category
+  - Job posting for a role specific to the relevant category (within the last 18 months)
+  - Patent filing or certification in the relevant technical area
+  - Self-reported membership in a relevant industry association
+
+Generic keywords (e.g., "digital solutions", "innovation", "technology") are not accepted as hard evidence in isolation.
+
+3.3 False-Positive Rate Target
+Meridian targets a false-positive rate of <3% in final client deliverables. False-positive audits are conducted on a random 5% sample of each delivered dataset. Results are documented and used to retrain classification models quarterly.
+
+3.4 Ambiguous Cases
+Entities that cannot be clearly verified or rejected within 30 minutes of manual review are escalated to the project lead. The project lead documents the decision and rationale. Escalation decisions are reviewed in the monthly quality meeting.
+
+===========================================================
+4. INDICATOR DERIVATION AND VALIDATION
+===========================================================
+
+4.1 Derived Indicators
+The following indicators are derived computationally and subject to validation before delivery:
+  - Employee size band: derived from LinkedIn profile data + Eurostat structural benchmarks
+  - Revenue band: derived from company registry filings where available; otherwise estimated from employee count and sector benchmarks
+  - Primary NACE code: assigned by classifier; validated against registry-reported code where available
+  - Activity start year: derived from earliest web archive snapshot or registry founding date
+
+4.2 Validation Checks
+Automated validation rules applied to all derived indicators:
+  - Employee count vs. revenue band must be internally consistent (e.g., no micro-enterprise with >€50M revenue)
+  - NACE code must match at 2-digit level with registry-reported code in >80% of cases; exceptions flagged
+  - Activity start year must be ≤ current year and ≥ 1900
+  - Country of establishment must be an ISO 3166-1 alpha-2 code
+
+Records failing validation are quarantined and reviewed before delivery.
+
+===========================================================
+5. DELIVERY AND CHANGE TRACKING
+===========================================================
+
+5.1 Delivery Formats
+All datasets are delivered in the format specified in the contract. Default delivery formats:
+  - Machine-readable: JSON (preferred), CSV, Parquet
+  - Human-readable summaries: Excel (.xlsx) with data dictionary tab
+  - Change logs: CSV with columns [entity_id, change_type, old_value, new_value, change_date, source]
+
+5.2 Change Log Protocol
+Every dataset update includes a change log covering all additions, deletions, and indicator changes since the previous delivery. Change types are classified as:
+  NEW_ENTITY: entity added for the first time
+  REMOVED_ENTITY: entity removed (with reason: dissolved, out-of-scope, duplicate)
+  INDICATOR_UPDATE: one or more indicator values changed
+  VERIFICATION_UPDATE: verification status changed
+
+5.3 Version Control
+All delivered datasets are version-controlled with a semantic version number (MAJOR.MINOR.PATCH). Major version increments indicate schema changes. Minor version increments indicate substantive data updates. Patch increments indicate corrections of specific errors.
+
+5.4 Data Retention
+Raw source data is retained for 36 months from the project end date. Processed datasets are retained for 60 months. Clients may request deletion of their project data at any time; deletion will be completed within 30 days of written request.
+
+===========================================================
+6. QUALITY REVIEW GOVERNANCE
+===========================================================
+
+6.1 Monthly Quality Meeting
+A standing monthly meeting reviews: false-positive audit results; coverage monitoring reports; validation failure rates; escalation decisions; and any client feedback on data quality.
+
+Attendees: Project Lead, Technical Lead, at least one Research Lead.
+Minutes are maintained in the internal project management system.
+
+6.2 Client Feedback Loop
+All client feedback related to data quality (e.g., identified errors, missing entities, misclassifications) is logged in the issue tracker and triaged within 3 working days. Critical errors (affecting >1% of a delivered dataset) are corrected and redelivered within 10 working days at no additional cost.
+
+===========================================================
+END OF DOCUMENT
+MIG-QA-001 v3.2 | Meridian Intelligence GmbH | Confidential
+===========================================================
