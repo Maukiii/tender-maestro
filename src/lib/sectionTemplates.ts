@@ -84,9 +84,19 @@ export const SECTION_TEMPLATES: SectionTemplate[] = [
     icon: Users,
     blocks: [
       {
-        titleSuffix: "Team Composition",
+        titleSuffix: "Team Lead",
         markdown:
-          "| Name | Role | Days Allocated |\n|------|------|----------------|\n| — | Team Lead | 40 |\n| — | Senior Analyst | 30 |\n| — | Junior Analyst | 25 |",
+          "| Name | Role | Days Allocated |\n|------|------|----------------|\n| — | Team Lead | 40 |",
+      },
+      {
+        titleSuffix: "Senior Analyst",
+        markdown:
+          "| Name | Role | Days Allocated |\n|------|------|----------------|\n| — | Senior Analyst | 30 |",
+      },
+      {
+        titleSuffix: "Junior Analyst",
+        markdown:
+          "| Name | Role | Days Allocated |\n|------|------|----------------|\n| — | Junior Analyst | 25 |",
       },
     ],
   },
