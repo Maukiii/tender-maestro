@@ -1,13 +1,24 @@
 import { useState } from "react";
-import { Bot, SendHorizonal } from "lucide-react";
+import { Bot, SendHorizonal, X, Quote } from "lucide-react";
+
+export interface SelectionContext {
+  text: string;
+  blockTitle: string;
+}
+
+interface AiChatPaneProps {
+  selection: SelectionContext | null;
+  onClearSelection: () => void;
+}
 
 interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
+  context?: string;
 }
 
-export function AiChatPane() {
+export function AiChatPane({ selection, onClearSelection }: AiChatPaneProps) {
   const [input, setInput] = useState("");
   const [messages] = useState<ChatMessage[]>([]);
 
@@ -27,14 +38,41 @@ export function AiChatPane() {
               <Bot className="h-6 w-6 text-accent-foreground" />
             </div>
             <p className="text-sm font-medium text-foreground">
-              How can I help?
+              {selection ? "Ask about the selection" : "How can I help?"}
             </p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Ask me to refine sections, suggest content, or review your proposal.
+              {selection
+                ? "Type a question or instruction about the highlighted text."
+                : "Select text in a block to ask the AI about it."}
             </p>
           </div>
         )}
       </div>
+
+      {/* Selection quote */}
+      {selection && (
+        <div className="shrink-0 border-t border-border px-3 pt-3">
+          <div className="flex items-start gap-2 rounded-lg bg-primary/5 border border-primary/20 px-3 py-2">
+            <Quote className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-primary mb-0.5">
+                {selection.blockTitle}
+              </p>
+              <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                {selection.text}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClearSelection}
+              className="p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors shrink-0"
+              aria-label="Clear selection"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Input */}
       <div className="shrink-0 border-t border-border p-3">
@@ -43,7 +81,11 @@ export function AiChatPane() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask the AI assistant…"
+            placeholder={
+              selection
+                ? "Ask about this selection…"
+                : "Select text to get started…"
+            }
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
           />
           <button
