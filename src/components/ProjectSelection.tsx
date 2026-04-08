@@ -163,14 +163,9 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
                 </div>
 
                 <div className="flex-1 min-w-0 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold text-foreground truncate">
-                      {project.name}
-                    </h3>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${statusStyles[project.status]}`}>
-                      {statusLabels[project.status]}
-                    </span>
-                  </div>
+                  <h3 className="text-sm font-semibold text-foreground truncate">
+                    {project.name}
+                  </h3>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     <span>{project.client}</span>
                     <span>·</span>
