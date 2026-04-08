@@ -26,3 +26,11 @@ dist-ssr
 # Python backend
 __pycache__
 *.pyc
+.venv/
+api/.venv/
+
+# Uploaded tender documents (user data, not code)
+documents/tenders/
+
+# macOS archive metadata
+documents/__MACOSX/

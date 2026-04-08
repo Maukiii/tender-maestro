@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { ChevronDown, ChevronUp, Clock, Plus, Target, Upload, X, Loader2, AlertTriangle } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, Plus, Target, Upload, X, Loader2, AlertTriangle, FileEdit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { listTenders, uploadTenderDocument, scoreTender, type UploadedTender, type TenderScore } from "@/lib/api";
 
@@ -245,7 +245,7 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
               </h2>
             </div>
             <p className="text-sm text-muted-foreground">
-              AI-scored against your company profile. Click a card to see the full breakdown.
+              AI-scored against your company profile. Click a card to expand the breakdown, then draft a proposal.
             </p>
           </div>
 
@@ -300,9 +300,10 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
                     key={tender.id}
                     className="rounded-xl border border-border bg-card overflow-hidden transition-shadow hover:shadow-md"
                   >
+                    {/* Card header — toggles score explanation */}
                     <button
                       type="button"
-                      onClick={() => score && onSelect(tender.id)}
+                      onClick={() => score && setExpandedId(isExpanded ? null : tender.id)}
                       className={`w-full flex items-center gap-4 p-5 text-left transition-colors ${
                         score ? "cursor-pointer hover:bg-accent/30" : "cursor-default"
                       }`}
@@ -359,10 +360,20 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
                       )}
                     </button>
 
-                    {/* Expanded score explanation */}
+                    {/* Expanded score explanation + Draft action */}
                     {isExpanded && score && (
                       <div className="px-5 pb-5">
                         <ScoreExplanation score={score} />
+                        <div className="mt-4 pt-3 border-t border-border flex justify-end">
+                          <Button
+                            size="sm"
+                            className="gap-1.5"
+                            onClick={() => onSelect(tender.id)}
+                          >
+                            <FileEdit className="h-3.5 w-3.5" />
+                            Draft Proposal
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
