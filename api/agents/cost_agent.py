@@ -33,6 +33,9 @@ Rules:
 - Include a contingency line (5–10 % of labour costs).
 - Round totals to nearest 500 EUR.
 - Use only the team members listed in PROPOSED TEAM.
+- All indirect costs (overheads, administration, profit) must be included in the daily rates. 
+  Do not create a separate line item for overheads unless the EU financial form explicitly requires it.
+- Calculate the days based on the initial_duration_months, not on the total duration including the extension.
 
 Return a JSON object — no markdown fences, just pure JSON:
 {

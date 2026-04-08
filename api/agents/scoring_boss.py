@@ -37,6 +37,10 @@ STEP 1 — K.O. CHECK (hard dealbreakers → immediate NO-BID if any applies)
 2. Required primary fieldwork / on-site surveys the company cannot perform.
 3. Required project languages not covered by any team member.
 4. Single-reference budget requirements that clearly exceed every team member's track record.
+5. Compare min_turnover_required (e.g., €500k) with the annual turnover listed in the Company Profile.
+  If the turnover is lower than that, mark it as NO-BID.
+6. Check whether the company has at least three reference projects that meet the content criteria 
+  (large-scale data collection AND EU policy support).
 
 STEP 2 — COMPANY FIT SCORE  (40 % of final decision)
 Score 0–100 based on the knowledge base:
