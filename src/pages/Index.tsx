@@ -3,14 +3,12 @@ import { KnowledgeSidebar } from "@/components/KnowledgeSidebar";
 import { AiChatPane } from "@/components/AiChatPane";
 import type { SelectionContext } from "@/components/AiChatPane";
 import { IngestPhase } from "@/components/IngestPhase";
-import { DocumentView } from "@/components/DocumentView";
 import { ProjectSelection } from "@/components/ProjectSelection";
 import { DEFAULT_SECTIONS } from "@/lib/proposalData";
 import type { ProposalSection } from "@/lib/proposalData";
-import { ArrowLeft, LayoutGrid, FileText } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 type View = "projects" | "editor";
-type EditorMode = "block" | "document";
 
 const Index = () => {
   const [view, setView] = useState<View>("projects");
