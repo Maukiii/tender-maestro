@@ -8,7 +8,12 @@ from fastapi.responses import StreamingResponse
 from agents.cost_agent import run_cost_agent
 from agents.kb_parser import load_kb_profile
 from agents.scoring_boss import run_scoring_boss
-from agents.sections_agent import run_sections_agent
+from agents.sections_agent import (
+    run_exec_summary_agent,
+    run_problem_framing_agent,
+    run_methodology_agent,
+    run_workplan_agent,
+)
 from agents.team_agent import run_team_agent
 from agents.tender_extraction_agent import run_tender_extractor_agent
 from models.schemas import (
@@ -96,16 +101,23 @@ async def score_tender(request: ScoreRequest):
 @router.post("/draft")
 async def draft_proposal(request: DraftRequest):
     """
-    Streams SSE events while 3 agents build the proposal in parallel:
-      - team_agent      → Team section
-      - cost_agent      → Price Summary section
-      - sections_agent  → Executive Summary, Problem Framing, Methodology, Workplan
+    Streams SSE events while 6 agents build the proposal in parallel.
+    Each section is streamed as soon as its agent finishes.
 
     SSE event types:
-      {"type": "status",  "step": "...", "progress": 0-100}
-      {"type": "result",  "sections": [...]}
-      {"type": "error",   "message": "..."}
+      {"type": "status",        "step": "...", "progress": 0-100}
+      {"type": "section",       "section": {"section_id": "...", "blocks": [...]}}
+      {"type": "section_error", "section_id": "...", "message": "..."}
+      {"type": "done"}
+      {"type": "error",         "message": "..."}  ← fatal pre-agent errors only
     """
+
+    async def _named_task(coro, section_id: str) -> tuple[str, dict]:
+        """Wrap a section coroutine so errors are returned (not raised) with their section_id."""
+        try:
+            return section_id, await coro
+        except Exception as e:
+            return section_id, {"__error__": str(e)}
 
     async def event_stream():
         def _status(step: str, progress: int) -> str:
@@ -132,44 +144,39 @@ async def draft_proposal(request: DraftRequest):
         score_data = pdf.load_score(request.documentId)
         kb_profile = load_kb_profile()
 
-        # ── 2. Run all 3 agents in parallel ───────────────────────────────
-        yield _status("Team · Cost · Sections agents running in parallel…", 25)
+        # ── 2. Launch all 6 agents concurrently ───────────────────────────
+        yield _status("6 agents running in parallel…", 20)
 
-        try:
-            team_result, cost_result, sections_result = await asyncio.gather(
-                run_team_agent(tender_data, kb_profile),
-                run_cost_agent(tender_data, kb_profile, score_data),
-                run_sections_agent(tender_data, kb_profile),
-            )
-        except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'message': f'Agent failed: {e}'})}\n\n"
-            return
+        tasks = [
+            asyncio.create_task(_named_task(run_exec_summary_agent(tender_data, kb_profile),    "exec-summary")),
+            asyncio.create_task(_named_task(run_problem_framing_agent(tender_data, kb_profile), "problem-framing")),
+            asyncio.create_task(_named_task(run_methodology_agent(tender_data, kb_profile),     "methodology")),
+            asyncio.create_task(_named_task(run_workplan_agent(tender_data, kb_profile),        "workplan")),
+            asyncio.create_task(_named_task(run_team_agent(tender_data, kb_profile),            "team")),
+            asyncio.create_task(_named_task(run_cost_agent(tender_data, kb_profile, score_data), "pricing")),
+        ]
 
-        # ── 3. Assemble into ordered sections list ─────────────────────────
-        yield _status("Assembling proposal…", 90)
+        # ── 3. Stream each section as it completes ─────────────────────────
+        completed = 0
+        total = len(tasks)
 
-        sections = []
+        for coro in asyncio.as_completed(tasks):
+            section_id, result = await coro
+            completed += 1
+            progress = 20 + int((completed / total) * 75)
 
-        # Sections agent fills: exec-summary, problem-framing, methodology, workplan
-        for sec in sections_result.get("sections", []):
-            sections.append({
-                "section_id": sec.get("section_id", ""),
-                "blocks": sec.get("blocks", []),
-            })
+            if "__error__" in result:
+                yield f"data: {json.dumps({'type': 'section_error', 'section_id': section_id, 'message': result['__error__']})}\n\n"
+            else:
+                section = {
+                    "section_id": result.get("section_id", section_id),
+                    "blocks": result.get("blocks", []),
+                }
+                yield f"data: {json.dumps({'type': 'section', 'section': section})}\n\n"
 
-        # Team agent
-        sections.append({
-            "section_id": team_result.get("section_id", "team"),
-            "blocks": team_result.get("blocks", []),
-        })
+            yield _status(f"Sections arriving… ({completed}/{total})", progress)
 
-        # Cost agent
-        sections.append({
-            "section_id": cost_result.get("section_id", "pricing"),
-            "blocks": cost_result.get("blocks", []),
-        })
-
-        yield f"data: {json.dumps({'type': 'result', 'sections': sections})}\n\n"
+        yield f"data: {json.dumps({'type': 'done'})}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 

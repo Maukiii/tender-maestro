@@ -270,13 +270,22 @@ export interface DraftedSection {
 }
 
 /**
- * Run the 3-agent parallel drafting pipeline for a scored tender.
- * Streams SSE status updates; resolves with the full sections array when done.
+ * Run the 6-agent parallel drafting pipeline for a scored tender.
+ * Streams SSE events; delivers each section via onSection as soon as it arrives.
+ *
+ * SSE events handled:
+ *   status        → onStatus callback
+ *   section       → onSection callback (one call per section)
+ *   section_error → console.warn (non-fatal; other sections still arrive)
+ *   done          → resolves the promise
+ *   error         → throws (fatal pre-agent failure)
  */
 export async function draftProposal(
   documentId: string,
   onStatus: (step: string, progress: number) => void,
-): Promise<DraftedSection[]> {
+  onSection: (section: DraftedSection) => void,
+  onSectionError?: (sectionId: string) => void,
+): Promise<void> {
   const res = await fetch(`${API_BASE}/tender/draft`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -298,12 +307,21 @@ export async function draftProposal(
     for (const line of lines) {
       if (!line.startsWith("data: ")) continue;
       const event = JSON.parse(line.slice(6));
-      if (event.type === "status") onStatus(event.step, event.progress);
-      else if (event.type === "result") return event.sections as DraftedSection[];
-      else if (event.type === "error") throw new Error(event.message);
+      if (event.type === "status") {
+        onStatus(event.step, event.progress);
+      } else if (event.type === "section") {
+        onSection(event.section as DraftedSection);
+      } else if (event.type === "section_error") {
+        console.warn(`[draftProposal] section failed — ${event.section_id}: ${event.message}`);
+        onSectionError?.(event.section_id);
+      } else if (event.type === "done") {
+        return;
+      } else if (event.type === "error") {
+        throw new Error(event.message);
+      }
     }
   }
-  throw new Error("Stream ended without a result");
+  throw new Error("Stream ended without done event");
 }
 
 /** Score a previously uploaded tender (runs the full extraction + scoring pipeline) */

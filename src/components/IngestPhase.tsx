@@ -1,19 +1,21 @@
 import { useState, useCallback, useRef } from "react";
-import { Eye, MessageSquare } from "lucide-react";
+import { Eye, Loader2, MessageSquare } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { ProposalSection } from "@/lib/proposalData";
+import { SECTION_TEMPLATES } from "@/lib/sectionTemplates";
 
 interface IngestPhaseProps {
   sections: ProposalSection[];
+  pendingSectionIds?: Set<string>;
   onUpdateBlock: (blockId: string, markdown: string) => void;
   onTextSelect: (text: string, blockTitle: string, blockId: string) => void;
   onSectionReference: (sectionId: string) => void;
   onScrollContainerReady?: (el: HTMLElement) => void;
 }
 
-export function IngestPhase({ sections, onUpdateBlock, onTextSelect, onSectionReference, onScrollContainerReady }: IngestPhaseProps) {
+export function IngestPhase({ sections, pendingSectionIds, onUpdateBlock, onTextSelect, onSectionReference, onScrollContainerReady }: IngestPhaseProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -42,6 +44,7 @@ export function IngestPhase({ sections, onUpdateBlock, onTextSelect, onSectionRe
     <div className="flex-1 flex flex-col min-h-0">
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-8 py-6">
         <div className="w-full max-w-3xl mx-auto space-y-8 pb-[60vh]">
+          {/* Arrived sections */}
           {sections.map((section) => {
             const Icon = section.icon;
 
@@ -140,6 +143,31 @@ export function IngestPhase({ sections, onUpdateBlock, onTextSelect, onSectionRe
               </div>
             );
           })}
+
+          {/* Pending section skeletons — shown while agents are still running */}
+          {SECTION_TEMPLATES
+            .filter((t) => pendingSectionIds?.has(t.id))
+            .map((t) => {
+              const Icon = t.icon;
+              return (
+                <div key={t.id} data-section-id={t.id} className="opacity-60">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Icon className="h-4 w-4 text-muted-foreground" />
+                    <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                      {t.label}
+                    </h2>
+                    <div className="flex-1 h-px bg-border ml-2" />
+                    <Loader2 className="h-3.5 w-3.5 text-muted-foreground animate-spin" />
+                  </div>
+                  <div className="space-y-2 px-4 animate-pulse">
+                    <div className="h-3 rounded-md bg-muted w-3/4" />
+                    <div className="h-3 rounded-md bg-muted w-full" />
+                    <div className="h-3 rounded-md bg-muted w-2/3" />
+                  </div>
+                </div>
+              );
+            })
+          }
         </div>
       </div>
     </div>

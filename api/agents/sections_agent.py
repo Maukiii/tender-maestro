@@ -1,94 +1,131 @@
 """
 Sections Agent
 
-Fills all proposal sections except Team and Pricing:
-  - Executive Summary
-  - Problem Framing
-  - Proposed Methodology
-  - Workplan & Deliverables
+Fills proposal sections: Executive Summary, Problem Framing,
+Proposed Methodology, and Workplan & Deliverables.
+
+Each section has its own prompt constant and async function so they can
+run concurrently. run_sections_agent() is kept as a convenience wrapper.
 """
 from __future__ import annotations
 
+import asyncio
 import json
 from typing import Any
 
 from services.ai import generate_text
 
-# ── System prompt — edit this to change the agent's behaviour ─────────────────
+
+# ── System prompts — edit these to change each section's behaviour ────────────
 # Do not mention specific company names, tools, or certifications here —
 # those facts come from the knowledge base injected at runtime.
 
-SYSTEM_PROMPT = """You are a Senior Proposal Writer.
-Your task is to fill four sections of a tender proposal:
-  1. Executive Summary   (section_id: "exec-summary")
-  2. Problem Framing     (section_id: "problem-framing")
-  3. Proposed Methodology (section_id: "methodology")
-  4. Workplan & Deliverables (section_id: "workplan")
+SYSTEM_PROMPT_EXEC_SUMMARY = """You are a Senior Proposal Writer.
+Your task is to write the EXECUTIVE SUMMARY section of a tender proposal.
 
 Write in a professional, concise EU-tender style.
-Tailor every section to the specific tender requirements provided.
-Draw exclusively on the company profile, capabilities, methodology, and past project
-experience supplied in the COMPANY PROFILE and METHODOLOGY REFERENCE sections below.
-Do not invent tools, certifications, or credentials that are not mentioned there.
+Tailor this section to the specific tender requirements provided.
+Draw exclusively on the company profile, capabilities, and past project
+experience supplied in COMPANY PROFILE below.
+Do not invent tools, certifications, or credentials not mentioned there.
 
-Block structure per section:
-  exec-summary  → 1 block "Overview":          3–4 paragraph executive narrative
-  problem-framing → 1 block "Problem Statement": articulate the client's challenge
-  methodology   → 3 blocks:
-                    "Scope Definition"          (what is in / out of scope)
-                    "Data Sourcing & Framework" (how data is collected and classified)
-                    "Approach & Scoring"        (analytical pipeline and quality controls)
-  workplan      → 1 block "Workplan":           markdown table (Milestone | Deliverable | Timeline)
+Structure — 1 block titled "Overview":
+  - Opening: demonstrate understanding of the client's challenge
+  - Company fit: state the company's unique qualifications for this tender
+  - Approach summary: summarise the proposed solution at a high level
+  - Closing commitment statement
 
 Return a JSON object — no markdown fences, just pure JSON:
 {
-  "sections": [
-    {
-      "section_id": "exec-summary",
-      "blocks": [{"title": "Overview", "markdown": "..."}]
-    },
-    {
-      "section_id": "problem-framing",
-      "blocks": [{"title": "Problem Statement", "markdown": "..."}]
-    },
-    {
-      "section_id": "methodology",
-      "blocks": [
-        {"title": "Scope Definition", "markdown": "..."},
-        {"title": "Data Sourcing & Framework", "markdown": "..."},
-        {"title": "Approach & Scoring", "markdown": "..."}
-      ]
-    },
-    {
-      "section_id": "workplan",
-      "blocks": [{"title": "Workplan", "markdown": "| Milestone | Deliverable | Timeline |\\n..."}]
-    }
+  "section_id": "exec-summary",
+  "blocks": [{"title": "Overview", "markdown": "..."}]
+}"""
+
+
+SYSTEM_PROMPT_PROBLEM_FRAMING = """You are a Senior Proposal Writer.
+Your task is to write the PROBLEM FRAMING section of a tender proposal.
+
+Write in a professional, concise EU-tender style.
+Analyse the tender requirements and articulate the client's underlying
+challenge — not just the stated deliverables.
+Do not invent context not present in the tender requirements.
+
+Structure — 1 block titled "Problem Statement":
+  - Root cause or systemic challenge the client faces
+  - Context within sector/market dynamics where relevant
+  - Consequences of inaction or inadequate response
+  - Scope of an adequate solution (without prescribing it yet)
+
+Return a JSON object — no markdown fences, just pure JSON:
+{
+  "section_id": "problem-framing",
+  "blocks": [{"title": "Problem Statement", "markdown": "..."}]
+}"""
+
+
+SYSTEM_PROMPT_METHODOLOGY = """You are a Senior Proposal Writer.
+Your task is to write the PROPOSED METHODOLOGY section of a tender proposal.
+
+Write in a professional, concise EU-tender style.
+Draw exclusively on the methodology documents and company capabilities
+supplied in METHODOLOGY REFERENCE and COMPANY PROFILE below.
+Do not invent tools, frameworks, or processes not mentioned there.
+
+Structure — exactly 3 blocks:
+  1. "Scope Definition"
+     - What is explicitly in scope (bullet list)
+     - What is explicitly out of scope (bullet list)
+     - Any assumptions or conditions
+
+  2. "Data Sourcing & Framework"
+     - Primary and secondary data sources
+     - Data classification and validation approach
+     - Quality assurance steps
+
+  3. "Approach & Scoring"
+     - The analytical pipeline step by step
+     - Scoring or evaluation criteria if applicable
+     - Quality controls and review gates
+
+Return a JSON object — no markdown fences, just pure JSON:
+{
+  "section_id": "methodology",
+  "blocks": [
+    {"title": "Scope Definition", "markdown": "..."},
+    {"title": "Data Sourcing & Framework", "markdown": "..."},
+    {"title": "Approach & Scoring", "markdown": "..."}
   ]
 }"""
 
 
-# ── Entry point ───────────────────────────────────────────────────────────────
+SYSTEM_PROMPT_WORKPLAN = """You are a Senior Proposal Writer.
+Your task is to write the WORKPLAN & DELIVERABLES section of a tender proposal.
 
-async def run_sections_agent(
-    tender_data: dict[str, Any],
-    kb_profile: dict[str, Any],
-) -> dict[str, Any]:
-    """
-    Fill Executive Summary, Problem Framing, Methodology, and Workplan sections.
+Write in a professional, concise EU-tender style.
+Base the timeline on the tender's stated duration, start date, and any
+phasing requirements. Do not invent deliverables beyond what the tender scope implies.
 
-    Args:
-        tender_data:  Structured tender info from the extraction agent.
-        kb_profile:   Company KB (methodology docs, company profile, past projects).
+Structure — 1 block titled "Workplan":
+  - A brief narrative paragraph above the table summarising the phasing approach
+  - A markdown table: Milestone | Deliverable | Timeline
+    · 4–6 milestones appropriate to the tender scope
+    · Timeline in months (e.g. "Months 1–2") unless exact dates are stated
+    · Deliverable codes follow EU convention (D1, D2, …)
 
-    Returns:
-        Dict with key "sections": list of {section_id, blocks}.
-    """
+Return a JSON object — no markdown fences, just pure JSON:
+{
+  "section_id": "workplan",
+  "blocks": [{"title": "Workplan", "markdown": "| Milestone | Deliverable | Timeline |\\n..."}]
+}"""
+
+
+# ── Shared context builder ────────────────────────────────────────────────────
+
+def _build_context(tender_data: dict[str, Any], kb_profile: dict[str, Any]) -> tuple[str, str, str]:
+    """Return (tender_text, company_profile, methodology_text) truncated for prompt use."""
     tender_text = json.dumps(tender_data, indent=2, ensure_ascii=False, default=str)[:3000]
 
-    # Pull relevant KB context: methodology + company profile summary
-    methodology_docs = kb_profile.get("methodology_documents", [])
     company_docs = kb_profile.get("company_documents", [])
-
     company_profile = ""
     if company_docs:
         doc = company_docs[0]
@@ -98,26 +135,101 @@ async def run_sections_agent(
             "capabilities": doc.get("capabilities", {}).get("capabilities_list", []),
         }, indent=2, ensure_ascii=False, default=str)[:2000]
 
+    methodology_docs = kb_profile.get("methodology_documents", [])
     methodology_text = json.dumps(methodology_docs, indent=2, ensure_ascii=False, default=str)[:2000]
 
+    return tender_text, company_profile, methodology_text
+
+
+# ── Per-section entry points ──────────────────────────────────────────────────
+
+async def run_exec_summary_agent(
+    tender_data: dict[str, Any], kb_profile: dict[str, Any]
+) -> dict[str, Any]:
+    """Generate the Executive Summary section."""
+    tender_text, company_profile, _ = _build_context(tender_data, kb_profile)
+    user_msg = (
+        "TENDER REQUIREMENTS:\n" + tender_text + "\n\n"
+        "COMPANY PROFILE:\n" + company_profile
+    )
+    raw = await generate_text(
+        messages=[{"role": "user", "content": user_msg}],
+        system=SYSTEM_PROMPT_EXEC_SUMMARY,
+        max_tokens=2048,
+    )
+    return _parse_json(raw, "exec_summary_agent")
+
+
+async def run_problem_framing_agent(
+    tender_data: dict[str, Any], kb_profile: dict[str, Any]
+) -> dict[str, Any]:
+    """Generate the Problem Framing section."""
+    tender_text, _, _ = _build_context(tender_data, kb_profile)
+    user_msg = "TENDER REQUIREMENTS:\n" + tender_text
+    raw = await generate_text(
+        messages=[{"role": "user", "content": user_msg}],
+        system=SYSTEM_PROMPT_PROBLEM_FRAMING,
+        max_tokens=1024,
+    )
+    return _parse_json(raw, "problem_framing_agent")
+
+
+async def run_methodology_agent(
+    tender_data: dict[str, Any], kb_profile: dict[str, Any]
+) -> dict[str, Any]:
+    """Generate the Proposed Methodology section (3 blocks)."""
+    tender_text, company_profile, methodology_text = _build_context(tender_data, kb_profile)
     user_msg = (
         "TENDER REQUIREMENTS:\n" + tender_text + "\n\n"
         "COMPANY PROFILE:\n" + company_profile + "\n\n"
         "METHODOLOGY REFERENCE:\n" + methodology_text
     )
-
     raw = await generate_text(
         messages=[{"role": "user", "content": user_msg}],
-        system=SYSTEM_PROMPT,
-        max_tokens=8192,
+        system=SYSTEM_PROMPT_METHODOLOGY,
+        max_tokens=4096,
     )
+    return _parse_json(raw, "methodology_agent")
 
-    return _parse_json(raw)
+
+async def run_workplan_agent(
+    tender_data: dict[str, Any], kb_profile: dict[str, Any]
+) -> dict[str, Any]:
+    """Generate the Workplan & Deliverables section."""
+    tender_text, _, _ = _build_context(tender_data, kb_profile)
+    user_msg = "TENDER REQUIREMENTS:\n" + tender_text
+    raw = await generate_text(
+        messages=[{"role": "user", "content": user_msg}],
+        system=SYSTEM_PROMPT_WORKPLAN,
+        max_tokens=1024,
+    )
+    return _parse_json(raw, "workplan_agent")
 
 
-# ── Helper ────────────────────────────────────────────────────────────────────
+# ── Convenience wrapper (backward compat) ─────────────────────────────────────
 
-def _parse_json(raw: str) -> dict:
+async def run_sections_agent(
+    tender_data: dict[str, Any],
+    kb_profile: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    Run all 4 section agents concurrently and return the combined result.
+
+    Returns:
+        Dict with key "sections": list of {section_id, blocks}.
+    """
+    results = await asyncio.gather(
+        run_exec_summary_agent(tender_data, kb_profile),
+        run_problem_framing_agent(tender_data, kb_profile),
+        run_methodology_agent(tender_data, kb_profile),
+        run_workplan_agent(tender_data, kb_profile),
+    )
+    return {"sections": list(results)}
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def _parse_json(raw: str, agent: str) -> dict:
     clean = _strip_fence(raw)
     try:
         return json.loads(clean)
@@ -129,7 +241,7 @@ def _parse_json(raw: str) -> dict:
                 return json.loads(raw[start:end])
             except json.JSONDecodeError:
                 pass
-    raise RuntimeError(f"sections_agent returned invalid JSON. Raw: {raw[:300]}")
+    raise RuntimeError(f"{agent} returned invalid JSON. Raw: {raw[:300]}")
 
 
 def _strip_fence(raw: str) -> str:

@@ -5,10 +5,9 @@ import type { SelectionContext } from "@/components/AiChatPane";
 import { IngestPhase } from "@/components/IngestPhase";
 import { ProjectSelection } from "@/components/ProjectSelection";
 import { ProcessingPhase } from "@/components/ProcessingPhase";
-import { DEFAULT_SECTIONS } from "@/lib/proposalData";
 import type { ProposalSection } from "@/lib/proposalData";
 import { SECTION_TEMPLATES, getTemplateById } from "@/lib/sectionTemplates";
-import { draftProposal } from "@/lib/api";
+import { draftProposal, type DraftedSection } from "@/lib/api";
 import { ArrowLeft, FileText } from "lucide-react";
 
 type View = "projects" | "drafting" | "editor";
@@ -18,7 +17,8 @@ const genId = (prefix: string) => `${prefix}-${Date.now()}-${++idCounter}`;
 
 export const Index = () => {
   const [view, setView] = useState<View>("projects");
-  const [sections, setSections] = useState<ProposalSection[]>(DEFAULT_SECTIONS);
+  const [sections, setSections] = useState<ProposalSection[]>([]);
+  const [pendingSectionIds, setPendingSectionIds] = useState<Set<string>>(new Set());
   const [selection, setSelection] = useState<SelectionContext | null>(null);
   const [scrollContainer, setScrollContainer] = useState<HTMLElement | null>(null);
   const [draftingStatus, setDraftingStatus] = useState("Starting agents…");
@@ -104,38 +104,59 @@ export const Index = () => {
     setDraftingStatus("Starting agents…");
     setDraftingProgress(0);
     setDraftingError(null);
+    setSections([]);
+    setPendingSectionIds(new Set(SECTION_TEMPLATES.map((t) => t.id)));
     setView("drafting");
 
-    try {
-      const draftedSections = await draftProposal(documentId, (step, progress) => {
-        setDraftingStatus(step);
-        setDraftingProgress(progress);
-      });
+    let firstSection = false;
 
-      // Map backend DraftedSection[] → ProposalSection[]
-      const built: ProposalSection[] = draftedSections.map((ds) => {
-        const template = getTemplateById(ds.section_id);
-        return {
-          id: genId("section"),
-          label: template?.label ?? ds.section_id,
-          icon: template?.icon ?? FileText,
-          blocks: ds.blocks.map((b) => ({
-            id: genId("block"),
-            title: b.title,
-            markdown: b.markdown,
-          })),
-        };
-      });
+    const sectionOrder = SECTION_TEMPLATES.map((t) => t.id);
 
-      if (built.length > 0) {
-        setSections(built);
+    const onSection = (ds: DraftedSection) => {
+      const template = getTemplateById(ds.section_id);
+      const newSection: ProposalSection = {
+        id: ds.section_id,
+        label: template?.label ?? ds.section_id,
+        icon: template?.icon ?? FileText,
+        blocks: ds.blocks.map((b) => ({
+          id: genId("block"),
+          title: b.title,
+          markdown: b.markdown,
+        })),
+      };
+      setSections((prev) => {
+        const updated = [...prev, newSection];
+        updated.sort((a, b) => sectionOrder.indexOf(a.id) - sectionOrder.indexOf(b.id));
+        return updated;
+      });
+      setPendingSectionIds((prev) => {
+        const next = new Set(prev);
+        next.delete(ds.section_id);
+        return next;
+      });
+      if (!firstSection) {
+        firstSection = true;
         setView("editor");
-      } else {
+      }
+    };
+
+    try {
+      await draftProposal(
+        documentId,
+        (step, progress) => { setDraftingStatus(step); setDraftingProgress(progress); },
+        onSection,
+        (sectionId) => {
+          // Remove failed section skeleton so it doesn't stay stuck
+          setPendingSectionIds((prev) => { const n = new Set(prev); n.delete(sectionId); return n; });
+        },
+      );
+      if (!firstSection) {
         setDraftingError("Agents returned no sections. Check the backend logs.");
       }
     } catch (err) {
       console.error("[draftProposal] failed:", err);
       setDraftingError(err instanceof Error ? err.message : String(err));
+      if (!firstSection) setView("drafting");
     }
   }, []);
 
@@ -208,6 +229,7 @@ export const Index = () => {
 
         <IngestPhase
           sections={sections}
+          pendingSectionIds={pendingSectionIds}
           onUpdateBlock={handleUpdateBlock}
           onTextSelect={handleTextSelect}
           onSectionReference={handleSectionReference}
