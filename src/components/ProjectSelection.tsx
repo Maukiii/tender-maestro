@@ -169,7 +169,8 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
     [handleFile]
   );
 
-  const sortedTenders = [...MOCK_INCOMING_TENDERS].sort((a, b) => b.matchScore - a.matchScore);
+  const avgScore = (t: IncomingTender) => Math.round(t.scores.reduce((s, c) => s + c.value, 0) / t.scores.length);
+  const sortedTenders = [...MOCK_INCOMING_TENDERS].sort((a, b) => avgScore(b) - avgScore(a));
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -242,17 +243,16 @@ export function ProjectSelection({ onSelect }: ProjectSelectionProps) {
                   onClick={() => onSelect(tender.id)}
                   className="w-full flex items-center gap-4 p-5 rounded-xl border border-border bg-card hover:shadow-md hover:border-primary/30 transition-all text-left group"
                 >
-                  <ScoreRing score={tender.matchScore} />
+                  <div className="flex items-center gap-3 shrink-0">
+                    {tender.scores.map((s) => (
+                      <ScoreRing key={s.label} score={s.value} label={s.label} size="sm" />
+                    ))}
+                  </div>
 
                   <div className="flex-1 min-w-0 space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-semibold text-foreground truncate">
-                        {tender.title}
-                      </h3>
-                      <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border shrink-0 ${getScoreBg(tender.matchScore)} ${getScoreColor(tender.matchScore)}`}>
-                        {getScoreLabel(tender.matchScore)}
-                      </span>
-                    </div>
+                    <h3 className="text-sm font-semibold text-foreground truncate">
+                      {tender.title}
+                    </h3>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <span>{tender.client}</span>
                       <span>·</span>
