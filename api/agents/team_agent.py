@@ -74,11 +74,10 @@ async def run_team_agent(tender_data: dict[str, Any], kb_profile: dict[str, Any]
 # ── Helper ────────────────────────────────────────────────────────────────────
 
 def _parse_json(raw: str) -> dict:
-    clean = raw.strip().lstrip("```json").lstrip("```").rstrip("```").strip()
+    clean = _strip_fence(raw)
     try:
         return json.loads(clean)
     except json.JSONDecodeError:
-        # Try to extract JSON object from the response
         start = raw.find("{")
         end = raw.rfind("}") + 1
         if start != -1 and end > start:
@@ -87,3 +86,12 @@ def _parse_json(raw: str) -> dict:
             except json.JSONDecodeError:
                 pass
     raise RuntimeError(f"team_agent returned invalid JSON. Raw: {raw[:300]}")
+
+
+def _strip_fence(raw: str) -> str:
+    lines = raw.strip().splitlines()
+    if lines and lines[0].startswith("```"):
+        lines = lines[1:]
+    if lines and lines[-1].strip() == "```":
+        lines = lines[:-1]
+    return "\n".join(lines).strip()

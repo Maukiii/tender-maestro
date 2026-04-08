@@ -82,7 +82,7 @@ async def run_cost_agent(
     raw = await generate_text(
         messages=[{"role": "user", "content": user_msg}],
         system=SYSTEM_PROMPT,
-        max_tokens=1024,
+        max_tokens=2048,
     )
 
     return _parse_json(raw)
@@ -91,7 +91,7 @@ async def run_cost_agent(
 # ── Helper ────────────────────────────────────────────────────────────────────
 
 def _parse_json(raw: str) -> dict:
-    clean = raw.strip().lstrip("```json").lstrip("```").rstrip("```").strip()
+    clean = _strip_fence(raw)
     try:
         return json.loads(clean)
     except json.JSONDecodeError:
@@ -103,3 +103,12 @@ def _parse_json(raw: str) -> dict:
             except json.JSONDecodeError:
                 pass
     raise RuntimeError(f"cost_agent returned invalid JSON. Raw: {raw[:300]}")
+
+
+def _strip_fence(raw: str) -> str:
+    lines = raw.strip().splitlines()
+    if lines and lines[0].startswith("```"):
+        lines = lines[1:]
+    if lines and lines[-1].strip() == "```":
+        lines = lines[:-1]
+    return "\n".join(lines).strip()
