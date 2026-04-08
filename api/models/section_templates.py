@@ -61,13 +61,23 @@ SECTION_TEMPLATES: list[SectionTemplate] = [
         label="Team",
         blocks=[
             BlockTemplate(
-                "Team Composition",
+                "Team Lead",
                 "| Name | Role | Days Allocated |\n"
                 "|------|------|----------------|\n"
-                "| — | Team Lead | 40 |\n"
-                "| — | Senior Analyst | 30 |\n"
+                "| — | Team Lead | 40 |",
+            ),
+            BlockTemplate(
+                "Senior Analyst",
+                "| Name | Role | Days Allocated |\n"
+                "|------|------|----------------|\n"
+                "| — | Senior Analyst | 30 |",
+            ),
+            BlockTemplate(
+                "Junior Analyst",
+                "| Name | Role | Days Allocated |\n"
+                "|------|------|----------------|\n"
                 "| — | Junior Analyst | 25 |",
-            )
+            ),
         ],
     ),
     SectionTemplate(
