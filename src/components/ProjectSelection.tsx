@@ -166,34 +166,12 @@ export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps
   const handleFile = useCallback(async (file: File) => {
     setUploading(true);
     setShowUploadOverlay(false);
-    let docId: string | null = null;
     try {
-      const { documentId } = await uploadTenderDocument(file);
-      docId = documentId;
-      await refreshTenders(); // card appears immediately, no score yet
+      await uploadTenderDocument(file);
+      await refreshTenders();
     } finally {
       setUploading(false);
     }
-
-    if (!docId) return;
-
-    // Score in the background — card shows spinner until done
-    setScoringIds((prev) => new Set(prev).add(docId!));
-    setScoringErrors((prev) => { const m = new Map(prev); m.delete(docId!); return m; });
-    scoreTender(docId)
-      .then(() => refreshTenders())
-      .catch((err) => {
-        const msg = err instanceof Error ? err.message : String(err);
-        setScoringErrors((prev) => new Map(prev).set(docId!, msg));
-        refreshTenders();
-      })
-      .finally(() =>
-        setScoringIds((prev) => {
-          const next = new Set(prev);
-          next.delete(docId!);
-          return next;
-        })
-      );
   }, [refreshTenders]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
