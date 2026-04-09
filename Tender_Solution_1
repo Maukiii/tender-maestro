@@ -1,0 +1,108 @@
+# Technical and Financial Proposal
+
+**Reference:** EP/OPPD/2025/OP/0012  
+**Subject:** Systematic mapping and continuous monitoring of civil society organisations (CSOs) active in EU policy processes  
+**Contracting Authority:** European Parliament — Office for Promotion of Parliamentary Democracy (OPPD)  
+**Tenderer:** Meridian Intelligence GmbH, Berlin  
+
+---
+
+## 1. Executive Summary
+
+Meridian Intelligence GmbH proposes a comprehensive, evidence-led monitoring solution for the European Parliament’s Office for Promotion of Parliamentary Democracy (OPPD) to map and track civil society organisations (CSOs) active in EU policy processes. In direct response to the transparency gaps identified in self-reported registers, our proposal aligns with the European Union’s "Defence of Democracy" framework by providing a high-fidelity intelligence layer. We offer the Parliament a robust mechanism to identify both registered and unregistered advocacy groups, ensuring a complete and inclusive overview of the actors shaping the European legislative landscape.
+
+Our methodology centers on the proprietary Meridian Web Intelligence Pipeline, designed specifically to solve the "NGO Population Problem." Rather than relying on static NACE codes or voluntary disclosures, we deploy large-scale web-crawling and multilingual NLP classifiers to detect "policy signals" across the EU27 markets. By analyzing observable evidence—such as position papers, institutional interactions, and EU funding records—our system identifies "hidden actors" with a verified false-positive rate of <3%. 
+
+The project will deliver a longitudinal knowledge base over a period of 30 months, beginning with a comprehensive Baseline Dataset of verified entities within the first eight months. This is followed by a continuous monitoring cycle providing quarterly technical progress reports and structured dataset updates.
+
+---
+
+## 2. Understanding of the Assignment
+
+### 2.1 Context: Transparency and the Digital Civic Space
+The OPPD requires a robust, evidence-based intelligence layer to navigate an increasingly complex landscape of interest representation. While the EU Transparency Register is a cornerstone, its reliance on self-reporting creates data gaps. In the context of the EU's Transparency of Lobbying standards, identifying both registered and non-registered actors is critical for the resilience of the European legislative process.
+
+### 2.2 The Challenge: The NGO Population Problem
+Standard market mapping methodologies frequently fail in the non-profit sector due to:
+* **NACE Code Inadequacy:** Codes like 94.99 are too broad to distinguish between local clubs and cross-border advocacy groups.
+* **The Registration Gap:** Formal databases miss "hidden actors" operating outside formal registries but exerting significant influence.
+* **Self-Identification Bias:** Profiles are often static or strategically vague, failing to reflect actual thematic intensity.
+
+### 2.3 The Solution: Evidence-Based Ecosystem Intelligence
+Meridian Intelligence shifts the focus from **declarative data** to **observable evidence**. We bridge the gap through multilingual semantic scoping, signal-based profiling (e.g., EP Intergroup participation), and dynamic entity resolution to create a "Golden Record" for each actor.
+
+---
+
+## 3. Methodology
+
+### 3.1 Identification & Seed Universe
+We follow a hybrid approach using a **Seed Universe** (FTS, national registers) and **Source Tiering**:
+* **Tier 1 (Core):** Official EU directories.
+* **Tier 2 (Web Index):** Our index of 80M+ records searched for policy signals via Scrapy/Playwright.
+* **Tier 3 (Extended):** Extraction from parliamentary minutes and consultation responses.
+
+### 3.2 Evidence Classification
+| EVIDENCE TYPE | WEIGHT | EXAMPLE |
+| :--- | :--- | :--- |
+| **Official Registration** | High | Aktive ID im EU-Transparenzregister für "Interest Representation". |
+| **EU Funding Records** | High | Eintrag im FTS über erhaltene Grants für Policy-Projekte. |
+| **Mission & Semantic Alignment** | Medium | NLP-Analyse der Website-Inhalte auf EU-Legislativbezüge. |
+| **Stakeholder Interaction** | Medium | Nennung in Protokollen von EP-Ausschüssen. |
+| **Media & Policy Output** | Low | Veröffentlichung von Position Papers zu EU-Dossiers. |
+
+### 3.3 Analytical Framework
+The framework transforms raw data into strategic intelligence through **Entity Resolution**, using hybrid blocking and embedding-based systems. This ensures a **false-positive rate of <3%**. Analysis includes:
+1. **Concentration Analysis:** Mapping thematic NGO clusters.
+2. **Activity Scoring:** Measuring policy involvement intensity.
+3. **Network Mapping:** Identifying advocacy coalitions and networks.
+
+---
+
+## 4. Work Plan
+
+| Phase | Activities | Timeline |
+| :--- | :--- | :--- |
+| **Phase 0: Project Setup** | Kick-off, API architecture, cloud environment provisioning, Inception Report (D1). | Month 1–2 |
+| **Phase 1: Baseline** | Entity universe construction, multi-source harvesting, Baseline Dataset (D2). | Month 3–8 |
+| **Phase 2: Monitoring Y1** | Deployment of monitoring pipeline, quarterly change-logs, Progress Reports (D3/D4). | Month 9–16 |
+| **Phase 3: Monitoring Y2** | Trend analysis, final validation, Workshops (D6), Final Dataset & Report (D7). | Month 17–30 |
+
+---
+
+## 5. Team Composition
+
+| Name | Role | Focus of Activity | Days allocated |
+| :--- | :--- | :--- | :--- |
+| Dr. Anna Becker | Project Director | Strategische Gesamtleitung und Qualitätssicherung | 150 days |
+| Sofia Chen | Policy Lead | Regulatorisches Scoping und NGO-Analyse | 260 days |
+| Thomas Vogel | Technical Lead | Web-Intelligence-Infrastruktur & Architektur | 320 days |
+| Marcus Weber | Lead Data Scientist | Multilinguale NLP-Klassifizierung | 280 days |
+| Julia Schneider | Senior Research Analyst | Entitäts-Validierung & Stakeholder-Mgmt | 480 days |
+| Andrei Popescu | Data Engineer | Pipeline-Automatisierung & Monitoring | 450 days |
+
+---
+
+## 6. Quality Assurance
+
+Meridian Intelligence GmbH is ISO 9001 certified. For this assignment, we commit to:
+* **Accuracy:** False-positive rate <3% in the final dataset, verified by 5% manual audit.
+* **Coverage:** Analysis of signals in all 27 EU member state languages.
+* **Compliance:** Full GDPR compliance under the supervision of our DPO, Dr. Petra Hesse.
+
+---
+
+## 7. Price Summary
+
+| Kostenstelle | Beschreibung | Betrag (EUR) |
+| :--- | :--- | :--- |
+| **Staff Costs (Total)** | Projektteam (1.940 Personentage) | 1.649.000,00 € |
+| **Infrastructure & Cloud** | Hosting, AWS S3/EC2 Kapazitäten (30 Monate) | 180.000,00 € |
+| **Subcontracting (Surveys)** | Externe Datenerhebung (Y1-Y3) | 375.000,00 € |
+| **Travel & Subsistence** | Reisekosten für Vor-Ort-Termine (EP Brüssel/Stras) | 25.000,00 € |
+| **Stakeholder Events** | Pauschale für 2 Experten-Workshops | 45.000,00 € |
+| **Zwischensumme** | Gesamtkosten vor Risikoaufschlag | **2.274.000,00 €** |
+| **Contingency (5%)** | Risikoaufschlag | 113.700,00 € |
+| **Gesamtpreis (exkl. MwSt.)** | **Gesamtsumme für das Angebot (30 Monate)** | **2.387.700,00 €** |
+
+---
+*Generated by Meridian Bid Management System — April 2026*
