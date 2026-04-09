@@ -11,7 +11,7 @@ import { SECTION_TEMPLATES, getTemplateById } from "@/lib/sectionTemplates";
 import { draftProposal, saveProposal, loadProposal, type DraftedSection } from "@/lib/api";
 import { type TeamCandidate } from "@/lib/teamCandidates";
 import { parseMembers } from "@/components/TeamTable";
-import { ArrowLeft, FileText, Check, Loader2 } from "lucide-react";
+import { ArrowLeft, FileText, Check, Loader2, Download } from "lucide-react";
 
 type View = "projects" | "drafting" | "editor";
 
