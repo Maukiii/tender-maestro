@@ -5,6 +5,7 @@ import type { SelectionContext } from "@/components/AiChatPane";
 import { IngestPhase } from "@/components/IngestPhase";
 import { ProjectSelection } from "@/components/ProjectSelection";
 import { ProcessingPhase } from "@/components/ProcessingPhase";
+import { EditorFab } from "@/components/EditorFab";
 import type { ProposalSection } from "@/lib/proposalData";
 import { SECTION_TEMPLATES, getTemplateById } from "@/lib/sectionTemplates";
 import { draftProposal, saveProposal, loadProposal, type DraftedSection } from "@/lib/api";
@@ -320,6 +321,8 @@ export const Index = () => {
         onClearSelection={() => setSelection(null)}
         onApplyToBlock={handleApplyToBlock}
       />
+
+      <EditorFab sections={sections} onUpdateBlock={handleUpdateBlock} />
     </div>
   );
 };
