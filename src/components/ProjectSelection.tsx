@@ -6,15 +6,15 @@ import { listTenders, uploadTenderDocument, type UploadedTender, type TenderScor
 // ── Score display helpers ─────────────────────────────────────────────────────
 
 function getScoreColor(score: number): string {
-  if (score >= 75) return "text-emerald-500";
-  if (score >= 50) return "text-amber-500";
-  return "text-red-400";
+  if (score >= 75) return "text-success";
+  if (score >= 50) return "text-warning";
+  return "text-destructive";
 }
 
 function getScoreBg(score: number): string {
-  if (score >= 75) return "bg-emerald-500/10 border-emerald-500/20";
-  if (score >= 50) return "bg-amber-500/10 border-amber-500/20";
-  return "bg-red-400/10 border-red-400/20";
+  if (score >= 75) return "bg-success/10 border-success/20";
+  if (score >= 50) return "bg-warning/10 border-warning/20";
+  return "bg-destructive/10 border-destructive/20";
 }
 
 function ScoreRing({ score, label }: { score: number; label: string }) {
@@ -50,8 +50,8 @@ function DecisionBadge({ decision }: { decision: TenderScore["decision"] }) {
   return (
     <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
       isBid
-        ? "text-emerald-600 bg-emerald-500/10 border-emerald-500/20"
-        : "text-red-500 bg-red-500/10 border-red-500/20"
+        ? "text-success bg-success/10 border-success/20"
+        : "text-destructive bg-destructive/10 border-destructive/20"
     }`}>
       {decision}
     </span>
@@ -206,8 +206,8 @@ export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="h-14 flex items-center justify-between px-8 border-b border-primary/20 bg-primary shrink-0">
-        <h1 className="text-base font-semibold text-primary-foreground font-heading">
+      <header className="h-14 flex items-center justify-between px-8 border-b border-border bg-card shrink-0">
+        <h1 className="text-base font-semibold text-foreground font-heading">
           Tender EvaluAgent
         </h1>
         {/* intentionally empty — upload via dropzone below */}
