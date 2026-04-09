@@ -280,7 +280,7 @@ export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps
                 return (
                   <div
                     key={tender.id}
-                    className="rounded-xl border border-border bg-card overflow-hidden transition-shadow hover:shadow-md"
+                    className="rounded-xl border border-border bg-card text-card-foreground overflow-hidden transition-shadow hover:shadow-md"
                   >
                     {/* Card header — toggles score explanation */}
                     <button
