@@ -404,6 +404,6 @@ export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps
 
         </div>
       </div>
-
+    </div>
   );
 }
