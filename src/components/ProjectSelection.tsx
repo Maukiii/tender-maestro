@@ -159,6 +159,7 @@ export function ProjectSelection({ onSelect, onContinue, onOpenWebhookDraft }: P
   // Initial load
   useEffect(() => {
     refreshTenders();
+    handleFetchWebhook();
   }, [refreshTenders]);
 
   // Poll while any tender is being scored so the card updates automatically
