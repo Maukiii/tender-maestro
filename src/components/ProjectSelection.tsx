@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { ChevronDown, ChevronUp, Clock, Target, Upload, X, Loader2, AlertTriangle, FileEdit, RotateCcw, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, Target, Upload, Loader2, AlertTriangle, FileEdit, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { listTenders, uploadTenderDocument, type UploadedTender, type TenderScore } from "@/lib/api";
 
