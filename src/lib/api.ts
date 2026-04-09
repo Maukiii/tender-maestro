@@ -10,6 +10,7 @@
  */
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const N8N_WEBHOOK_URL = "https://fabiankir.app.n8n.cloud/webhook-test/e0347eff-f78c-43ab-9260-524ff53fbf03";
 
 // Returns true when the backend is simply not reachable (not a logic error).
 // Catches Chrome "Failed to fetch", Firefox "NetworkError when attempting to fetch resource",
