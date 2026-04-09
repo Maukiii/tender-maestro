@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Eye, Loader2, MessageSquare } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from "react-markdown";
@@ -18,6 +18,19 @@ interface IngestPhaseProps {
 export function IngestPhase({ sections, pendingSectionIds, onUpdateBlock, onTextSelect, onSectionReference, onScrollContainerReady }: IngestPhaseProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const editingRef = useRef<HTMLDivElement | null>(null);
+
+  // Close editor when clicking outside the active block
+  useEffect(() => {
+    if (!editingId) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (editingRef.current && !editingRef.current.contains(e.target as Node)) {
+        setEditingId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [editingId]);
 
   const handleMouseUp = useCallback(
     (blockTitle: string, blockId: string) => {
@@ -79,6 +92,7 @@ export function IngestPhase({ sections, pendingSectionIds, onUpdateBlock, onText
 
                     return (
                       <div
+                        ref={isEditing ? editingRef : undefined}
                         key={block.id}
                         className={`rounded-lg transition-all ${
                           isEditing
