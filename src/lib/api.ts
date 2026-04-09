@@ -331,32 +331,6 @@ export async function loadProposal(documentId: string): Promise<{ sections: Save
   return res.json();
 }
 
-/** Score a previously uploaded tender */
-export async function scoreTender(documentId: string): Promise<TenderScore & { documentId: string }> {
-  try {
-    const res = await fetch(`${API_BASE}/tender/score`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ documentId }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: res.statusText }));
-      throw new Error(err.detail ?? `Score request failed: ${res.status}`);
-    }
-    return res.json();
-  } catch (e) {
-    if (isOffline(e)) {
-      await delay(1500);
-      const mockScore = MOCK_SCORES[mockTenderCounter % MOCK_SCORES.length];
-      // Update the mock store with the score
-      const tender = mockTenderStore.find((t) => t.id === documentId);
-      if (tender) tender.score = mockScore;
-      return { ...mockScore, documentId };
-    }
-    throw e;
-  }
-}
-
 /** Upload the tender PDF for analysis */
 export async function uploadTenderDocument(file: File): Promise<{ documentId: string }> {
   try {
@@ -370,7 +344,6 @@ export async function uploadTenderDocument(file: File): Promise<{ documentId: st
       await delay(800);
       const id = `mock-tender-${++mockTenderCounter}`;
       const score = generateCoherentMockScore(file.name);
-
       mockTenderStore.push({
         id,
         filename: file.name,
@@ -379,84 +352,6 @@ export async function uploadTenderDocument(file: File): Promise<{ documentId: st
         hasProposal: false,
       });
       return { documentId: id };
-    }
-    throw e;
-  }
-}
-
-/**
- * Analyze tender and generate draft.
- * When the backend is running: streams real SSE status updates and uses AI.
- * When offline: uses the original mock simulation.
- */
-export async function analyzeTender(
-  documentId: string,
-  onStatus: (status: AnalysisStatus) => void
-): Promise<DraftResult> {
-  try {
-    const res = await fetch(`${API_BASE}/tender/analyze`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ documentId }),
-    });
-    if (!res.ok) throw new Error(`${res.status}`);
-    if (!res.body) throw new Error("no body");
-
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop() ?? "";
-      for (const line of lines) {
-        if (!line.startsWith("data: ")) continue;
-        const event = JSON.parse(line.slice(6));
-        if (event.type === "status") onStatus({ step: event.step, progress: event.progress });
-        else if (event.type === "result") return { markdown: event.markdown, score: event.score };
-        else if (event.type === "error") throw new Error(event.message);
-      }
-    }
-    throw new Error("Stream ended without result");
-  } catch (e) {
-    if (isOffline(e)) {
-      // Mock fallback: simulate progress steps
-      const steps = [
-        "Extracting requirements...",
-        "Scoring tender fit...",
-        "Retrieving past project context...",
-        "Drafting initial response...",
-      ];
-      for (let i = 0; i < steps.length; i++) {
-        onStatus({ step: steps[i], progress: ((i + 1) / steps.length) * 100 });
-        await delay(1500);
-      }
-      return { markdown: MOCK_DRAFT, score: 87 };
-    }
-    throw e;
-  }
-}
-
-/** Send a revision instruction to the AI agent */
-export async function reviseDraft(request: RevisionRequest): Promise<RevisionResult> {
-  try {
-    const res = await fetch(`${API_BASE}/tender/revise`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(request),
-    });
-    if (!res.ok) throw new Error(`${res.status}`);
-    return res.json();
-  } catch (e) {
-    if (isOffline(e)) {
-      await delay(2000);
-      return {
-        markdown: MOCK_REVISED_DRAFT,
-        agentMessage: "Done. I have updated the draft to reflect those constraints.",
-      };
     }
     throw e;
   }
