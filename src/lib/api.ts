@@ -257,8 +257,30 @@ export async function uploadKnowledgeDocument(file: File): Promise<{ success: bo
 
 // ─── Mock tender store (used when backend is offline) ─────────────────
 
-let mockTenderCounter = 0;
-const mockTenderStore: UploadedTender[] = [];
+let mockTenderCounter = 3;
+const mockTenderStore: UploadedTender[] = [
+  {
+    id: "sample-1",
+    filename: "EU_Digital_Single_Market_Impact_Assessment_2025.pdf",
+    uploadedAt: new Date(Date.now() - 2 * 3600_000).toISOString(),
+    score: generateCoherentMockScore("EU_Digital_Single_Market_Impact_Assessment_2025.pdf"),
+    hasProposal: false,
+  },
+  {
+    id: "sample-2",
+    filename: "EBA_RegTech_Supervisory_Framework_Study.pdf",
+    uploadedAt: new Date(Date.now() - 18 * 3600_000).toISOString(),
+    score: generateCoherentMockScore("EBA_RegTech_Supervisory_Framework_Study.pdf"),
+    hasProposal: false,
+  },
+  {
+    id: "sample-3",
+    filename: "ENISA_AI_Cybersecurity_Risk_Landscape_Analysis.pdf",
+    uploadedAt: new Date(Date.now() - 3 * 86400_000).toISOString(),
+    score: generateCoherentMockScore("ENISA_AI_Cybersecurity_Risk_Landscape_Analysis.pdf"),
+    hasProposal: false,
+  },
+];
 
 /**
  * Generates a coherent mock score where all fields logically relate to each other.
