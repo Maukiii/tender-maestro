@@ -255,6 +255,46 @@ export async function uploadKnowledgeDocument(file: File): Promise<{ success: bo
   }
 }
 
+// ─── Mock tender store (used when backend is offline) ─────────────────
+
+let mockTenderCounter = 0;
+const mockTenderStore: UploadedTender[] = [];
+
+const MOCK_SCORES: TenderScore[] = [
+  {
+    decision: "BID",
+    company_fit_score: 82,
+    team_fit_score: 74,
+    overall_score: 78,
+    company_fit_reasoning: "Strong alignment with our cloud infrastructure and digital transformation capabilities. The required ISO 27001 certification is already in place.",
+    ko_criterion_triggered: null,
+    team_proposal: [
+      { role: "Project Director", member_name: "Sarah Mitchell", total_score_percentage: 91, score_details: { hard_skills_reasoning: "18 years of programme management", experience_reasoning: "Led 12 similar public-sector engagements", gap_analysis: "None identified" } },
+      { role: "Lead Architect", member_name: "James Chen", total_score_percentage: 85, score_details: { hard_skills_reasoning: "Deep microservices and cloud-native expertise", experience_reasoning: "Designed 3 comparable platforms", gap_analysis: "Limited experience with SAP integration" } },
+    ],
+  },
+  {
+    decision: "NO-BID",
+    company_fit_score: 38,
+    team_fit_score: 45,
+    overall_score: 41,
+    company_fit_reasoning: "The tender requires ITAR compliance and US-based data centres, neither of which we currently provide.",
+    ko_criterion_triggered: "ITAR compliance required — company is not ITAR-registered",
+    team_proposal: [],
+  },
+  {
+    decision: "BID",
+    company_fit_score: 65,
+    team_fit_score: 72,
+    overall_score: 68,
+    company_fit_reasoning: "Moderate fit. We cover most technical requirements but lack the requested healthcare domain certifications (HIPAA). Could partner with a certified sub-contractor.",
+    ko_criterion_triggered: null,
+    team_proposal: [
+      { role: "Senior Consultant", member_name: "Priya Sharma", total_score_percentage: 78, score_details: { hard_skills_reasoning: "Strong data analytics background", experience_reasoning: "5 health-tech advisory projects", gap_analysis: "No direct HIPAA audit experience" } },
+    ],
+  },
+];
+
 // ─── Tender ───────────────────────────────────────────────────────────
 
 /** List all uploaded tenders from documents/tenders/ */
@@ -264,7 +304,7 @@ export async function listTenders(): Promise<UploadedTender[]> {
     if (!res.ok) throw new Error(`${res.status}`);
     return res.json();
   } catch (e) {
-    if (isOffline(e)) return [];
+    if (isOffline(e)) return [...mockTenderStore];
     throw e;
   }
 }
@@ -276,17 +316,6 @@ export interface DraftedSection {
   blocks: { title: string; markdown: string }[];
 }
 
-/**
- * Run the 6-agent parallel drafting pipeline for a scored tender.
- * Streams SSE events; delivers each section via onSection as soon as it arrives.
- *
- * SSE events handled:
- *   status        → onStatus callback
- *   section       → onSection callback (one call per section)
- *   section_error → console.warn (non-fatal; other sections still arrive)
- *   done          → resolves the promise
- *   error         → throws (fatal pre-agent failure)
- */
 export async function draftProposal(
   documentId: string,
   onStatus: (step: string, progress: number) => void,
@@ -349,18 +378,30 @@ export async function loadProposal(documentId: string): Promise<{ sections: Save
   return res.json();
 }
 
-/** Score a previously uploaded tender (runs the full extraction + scoring pipeline) */
+/** Score a previously uploaded tender */
 export async function scoreTender(documentId: string): Promise<TenderScore & { documentId: string }> {
-  const res = await fetch(`${API_BASE}/tender/score`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ documentId }),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail ?? `Score request failed: ${res.status}`);
+  try {
+    const res = await fetch(`${API_BASE}/tender/score`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ documentId }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail ?? `Score request failed: ${res.status}`);
+    }
+    return res.json();
+  } catch (e) {
+    if (isOffline(e)) {
+      await delay(1500);
+      const mockScore = MOCK_SCORES[mockTenderCounter % MOCK_SCORES.length];
+      // Update the mock store with the score
+      const tender = mockTenderStore.find((t) => t.id === documentId);
+      if (tender) tender.score = mockScore;
+      return { ...mockScore, documentId };
+    }
+    throw e;
   }
-  return res.json();
 }
 
 /** Upload the tender PDF for analysis */
@@ -373,8 +414,16 @@ export async function uploadTenderDocument(file: File): Promise<{ documentId: st
     return res.json();
   } catch (e) {
     if (isOffline(e)) {
-      await delay(500);
-      return { documentId: "mock-doc-123" };
+      await delay(800);
+      const id = `mock-tender-${++mockTenderCounter}`;
+      mockTenderStore.push({
+        id,
+        filename: file.name,
+        uploadedAt: new Date().toISOString(),
+        score: null,
+        hasProposal: false,
+      });
+      return { documentId: id };
     }
     throw e;
   }
