@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { ChevronDown, ChevronUp, Clock, Target, Upload, X, Loader2, AlertTriangle, FileEdit, RotateCcw, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, Target, Upload, Loader2, AlertTriangle, FileEdit, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { listTenders, uploadTenderDocument, type UploadedTender, type TenderScore } from "@/lib/api";
 
@@ -134,7 +134,6 @@ interface ProjectSelectionProps {
 }
 
 export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps) {
-  const [showUploadOverlay, setShowUploadOverlay] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [tenders, setTenders] = useState<UploadedTender[]>([]);
@@ -165,7 +164,7 @@ export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps
 
   const handleFile = useCallback(async (file: File) => {
     setUploading(true);
-    setShowUploadOverlay(false);
+    
     try {
       await uploadTenderDocument(file);
       await refreshTenders();
@@ -405,51 +404,6 @@ export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps
 
         </div>
       </div>
-
-      {/* Upload overlay */}
-      {showUploadOverlay && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
-          onClick={() => setShowUploadOverlay(false)}
-        >
-          <div
-            className="relative w-full max-w-md mx-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => setShowUploadOverlay(false)}
-              className="absolute -top-10 right-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Close"
-            >
-              <X className="h-5 w-5" />
-            </button>
-
-            <div
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onClick={() => fileInputRef.current?.click()}
-              className={`
-                flex flex-col items-center justify-center gap-4 rounded-2xl
-                border-2 border-dashed cursor-pointer px-8 py-16 transition-colors
-                ${isDraggingOver
-                  ? "border-green-500 bg-green-500/10"
-                  : "border-green-500/60 bg-card hover:border-green-500 hover:bg-green-500/5"
-                }
-              `}
-            >
-              <div className={`p-4 rounded-full transition-colors ${isDraggingOver ? "bg-green-500/20" : "bg-muted"}`}>
-                <Upload className={`h-8 w-8 transition-colors ${isDraggingOver ? "text-green-500" : "text-muted-foreground"}`} />
-              </div>
-              <div className="text-center space-y-1">
-                <p className="text-sm font-semibold text-foreground">Drop your Tender Document here</p>
-                <p className="text-xs text-muted-foreground">or click to browse — PDF, DOCX</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
