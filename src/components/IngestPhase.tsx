@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Eye, Loader2, MessageSquare } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { TeamTable } from "@/components/TeamTable";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { ProposalSection } from "@/lib/proposalData";
