@@ -11,7 +11,7 @@ import { SECTION_TEMPLATES, getTemplateById } from "@/lib/sectionTemplates";
 import { draftProposal, saveProposal, loadProposal, type DraftedSection } from "@/lib/api";
 import { type TeamCandidate } from "@/lib/teamCandidates";
 import { parseMembers } from "@/components/TeamTable";
-import { ArrowLeft, FileText, Check, Loader2 } from "lucide-react";
+import { ArrowLeft, FileText, Check, Loader2, Download } from "lucide-react";
 
 type View = "projects" | "drafting" | "editor";
 
@@ -319,6 +319,24 @@ export const Index = () => {
             Block View
           </h1>
           <div className="flex-1" />
+          <button
+            type="button"
+            onClick={() => {
+              const md = sections
+                .map((s) => `# ${s.label}\n\n${s.blocks.map((b) => `## ${b.title}\n\n${b.markdown}`).join("\n\n")}`)
+                .join("\n\n---\n\n");
+              const blob = new Blob([md], { type: "text/markdown" });
+              const a = document.createElement("a");
+              a.href = URL.createObjectURL(blob);
+              a.download = "proposal.md";
+              a.click();
+              URL.revokeObjectURL(a.href);
+            }}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Download className="h-4 w-4" />
+            Export
+          </button>
           {saveStatus === "saving" && (
             <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Loader2 className="h-3 w-3 animate-spin" />
