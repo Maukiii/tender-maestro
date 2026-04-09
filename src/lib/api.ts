@@ -260,39 +260,100 @@ export async function uploadKnowledgeDocument(file: File): Promise<{ success: bo
 let mockTenderCounter = 0;
 const mockTenderStore: UploadedTender[] = [];
 
+/**
+ * Generates a coherent mock score where all fields logically relate to each other.
+ * Scores are correlated (±12 pts), reasoning matches the score tier, KOs only fire on low scores,
+ * and team members only appear on BID decisions.
+ */
+function generateCoherentMockScore(filename: string): TenderScore {
+  const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+  // Pick a scenario tier so everything is consistent
+  const tier = Math.random();
+  let baseScore: number;
+  if (tier < 0.25) baseScore = rand(25, 42);       // weak
+  else if (tier < 0.55) baseScore = rand(50, 68);   // moderate
+  else baseScore = rand(72, 93);                     // strong
+
+  // Correlated scores: vary ±12 from base, clamped 5–98
+  const clamp = (v: number) => Math.max(5, Math.min(98, v));
+  const companyFit = clamp(baseScore + rand(-8, 12));
+  const teamFit = clamp(baseScore + rand(-12, 8));
+  const overall = Math.round((companyFit + teamFit) / 2);
+  const isBid = overall >= 55;
+
+  // Reasoning that matches the score tier
+  const STRONG_REASONS = [
+    "Strong alignment with our cloud infrastructure, data analytics capabilities, and existing EU institutional client relationships. ISO 27001 and SOC 2 certifications already held.",
+    "Excellent match — the required competencies in regulatory technology and market analysis map directly to our core practice areas. Prior work with ENISA and EBA strengthens the positioning.",
+    "Our team has delivered three comparable studies in this domain over the past 24 months. Technical requirements are fully covered by existing tooling and methodologies.",
+  ];
+  const MODERATE_REASONS = [
+    "Moderate fit — we cover most technical requirements (web mapping, data classification) but lack the specific domain certification mentioned in the ToR. A subcontractor partnership could close the gap.",
+    "Partial overlap with our service portfolio. The data engineering and analytics components align well, but the on-site workshop requirements in multiple Member States would stretch current capacity.",
+    "We meet roughly 70% of the stated requirements. The methodology fits our WebMap framework, but the contracting authority's emphasis on sector-specific regulatory expertise is a gap we'd need to address.",
+  ];
+  const WEAK_REASONS = [
+    "Limited alignment — the tender requires ITAR-equivalent compliance and national security clearances that our organisation does not hold and cannot obtain within the bid timeline.",
+    "The scope centres on a domain (medical devices regulation) where we have no prior experience or relevant certifications. Bidding would require significant capability acquisition.",
+    "Poor strategic fit. The tender mandates physical presence in a region we do not cover, and the budget ceiling is below our minimum viable engagement threshold.",
+  ];
+
+  let reasoning: string;
+  let ko: string | null = null;
+  if (overall >= 72) {
+    reasoning = STRONG_REASONS[rand(0, STRONG_REASONS.length - 1)];
+  } else if (overall >= 50) {
+    reasoning = MODERATE_REASONS[rand(0, MODERATE_REASONS.length - 1)];
+    // Moderate tenders occasionally have a soft KO
+    if (Math.random() < 0.2) ko = "Domain certification not held — waiver may be possible";
+  } else {
+    reasoning = WEAK_REASONS[rand(0, WEAK_REASONS.length - 1)];
+    // Weak tenders usually have a hard KO
+    const HARD_KOS = [
+      "Mandatory security clearance not held by any current staff member",
+      "Requires physical data-centre presence in jurisdiction we do not operate in",
+      "Budget ceiling below minimum viable engagement cost for this scope",
+      "Required domain certification (e.g. HIPAA, ITAR) not held and not obtainable in time",
+    ];
+    ko = HARD_KOS[rand(0, HARD_KOS.length - 1)];
+  }
+
+  // Team: only populated if BID, and scores correlate with teamFit
+  const TEAM_POOL = [
+    { role: "Project Director", member_name: "Dr. Anna Becker", baseScore: 88, details: { hard_skills_reasoning: "18 years programme management; PMP and PRINCE2 certified", experience_reasoning: "Led 12 EU institutional studies including ENISA and JRC", gap_analysis: "None identified" } },
+    { role: "Lead Methodologist", member_name: "Marcus Weber", baseScore: 82, details: { hard_skills_reasoning: "Expert in web-mapping, NLP-based entity classification, and data pipeline design", experience_reasoning: "Technical lead on 5 comparable EU market studies", gap_analysis: "Limited experience with healthcare-specific taxonomies" } },
+    { role: "Senior Data Analyst", member_name: "Sofia Chen", baseScore: 78, details: { hard_skills_reasoning: "Strong quantitative background; Python, R, SQL, and geospatial analysis", experience_reasoning: "3 years on EU regulatory technology mapping projects", gap_analysis: "Has not led a workstream independently yet" } },
+    { role: "Domain Expert", member_name: "Thomas Vogel", baseScore: 75, details: { hard_skills_reasoning: "Deep knowledge of EU regulatory frameworks (AI Act, DORA, NIS2)", experience_reasoning: "Former policy adviser at a national competent authority", gap_analysis: "Consulting experience is primarily advisory, less hands-on data work" } },
+  ];
+
+  let teamProposal: TenderScore["team_proposal"] = [];
+  if (isBid) {
+    const teamSize = overall >= 72 ? rand(3, 4) : rand(1, 3);
+    teamProposal = TEAM_POOL.slice(0, teamSize).map((p) => ({
+      role: p.role,
+      member_name: p.member_name,
+      // Individual score influenced by team_fit_score (±10)
+      total_score_percentage: clamp(p.baseScore + rand(-6, 6) + Math.round((teamFit - 70) / 3)),
+      score_details: p.details,
+    }));
+  }
+
+  return {
+    decision: isBid ? "BID" : "NO-BID",
+    company_fit_score: companyFit,
+    team_fit_score: teamFit,
+    overall_score: overall,
+    company_fit_reasoning: reasoning,
+    ko_criterion_triggered: ko,
+    team_proposal: teamProposal,
+  };
+}
+
 const MOCK_SCORES: TenderScore[] = [
-  {
-    decision: "BID",
-    company_fit_score: 82,
-    team_fit_score: 74,
-    overall_score: 78,
-    company_fit_reasoning: "Strong alignment with our cloud infrastructure and digital transformation capabilities. The required ISO 27001 certification is already in place.",
-    ko_criterion_triggered: null,
-    team_proposal: [
-      { role: "Project Director", member_name: "Sarah Mitchell", total_score_percentage: 91, score_details: { hard_skills_reasoning: "18 years of programme management", experience_reasoning: "Led 12 similar public-sector engagements", gap_analysis: "None identified" } },
-      { role: "Lead Architect", member_name: "James Chen", total_score_percentage: 85, score_details: { hard_skills_reasoning: "Deep microservices and cloud-native expertise", experience_reasoning: "Designed 3 comparable platforms", gap_analysis: "Limited experience with SAP integration" } },
-    ],
-  },
-  {
-    decision: "NO-BID",
-    company_fit_score: 38,
-    team_fit_score: 45,
-    overall_score: 41,
-    company_fit_reasoning: "The tender requires ITAR compliance and US-based data centres, neither of which we currently provide.",
-    ko_criterion_triggered: "ITAR compliance required — company is not ITAR-registered",
-    team_proposal: [],
-  },
-  {
-    decision: "BID",
-    company_fit_score: 65,
-    team_fit_score: 72,
-    overall_score: 68,
-    company_fit_reasoning: "Moderate fit. We cover most technical requirements but lack the requested healthcare domain certifications (HIPAA). Could partner with a certified sub-contractor.",
-    ko_criterion_triggered: null,
-    team_proposal: [
-      { role: "Senior Consultant", member_name: "Priya Sharma", total_score_percentage: 78, score_details: { hard_skills_reasoning: "Strong data analytics background", experience_reasoning: "5 health-tech advisory projects", gap_analysis: "No direct HIPAA audit experience" } },
-    ],
-  },
+  generateCoherentMockScore("digital_transformation_platform.pdf"),
+  generateCoherentMockScore("itar_defence_analysis.pdf"),
+  generateCoherentMockScore("health_tech_market_study.pdf"),
 ];
 
 // ─── Tender ───────────────────────────────────────────────────────────
@@ -446,45 +507,7 @@ export async function uploadTenderDocument(file: File): Promise<{ documentId: st
     if (isOffline(e)) {
       await delay(800);
       const id = `mock-tender-${++mockTenderCounter}`;
-      // Generate random scores immediately so the card appears fully scored
-      const randScore = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
-      const companyFit = randScore(25, 95);
-      const teamFit = randScore(25, 95);
-      const overall = Math.round((companyFit + teamFit) / 2);
-      const isBid = overall >= 55;
-
-      const MOCK_REASONINGS = [
-        "Strong alignment with our cloud infrastructure and digital transformation capabilities.",
-        "Moderate fit — we cover most technical requirements but lack some domain certifications.",
-        "The tender requires niche regulatory compliance we don't currently hold.",
-        "Excellent match with our data analytics and AI/ML delivery track record.",
-        "Partial overlap with our service portfolio; partnering with a specialist is recommended.",
-      ];
-      const MOCK_KOS = [
-        null,
-        null,
-        null,
-        "Requires security clearance level not held by current staff",
-        "Mandatory on-site presence in a region we don't cover",
-      ];
-      const MOCK_TEAM = [
-        { role: "Project Director", member_name: "Sarah Mitchell", total_score_percentage: randScore(60, 98), score_details: { hard_skills_reasoning: "Strong programme management", experience_reasoning: "Led 12 similar engagements", gap_analysis: "None" } },
-        { role: "Lead Architect", member_name: "James Chen", total_score_percentage: randScore(55, 92), score_details: { hard_skills_reasoning: "Deep cloud-native expertise", experience_reasoning: "Designed 3 comparable platforms", gap_analysis: "Limited SAP experience" } },
-        { role: "Senior Analyst", member_name: "Priya Sharma", total_score_percentage: randScore(50, 90), score_details: { hard_skills_reasoning: "Data analytics background", experience_reasoning: "5 advisory projects", gap_analysis: "No HIPAA audit experience" } },
-      ];
-
-      const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
-      const ko = pick(MOCK_KOS);
-
-      const score: TenderScore = {
-        decision: isBid ? "BID" : "NO-BID",
-        company_fit_score: companyFit,
-        team_fit_score: teamFit,
-        overall_score: overall,
-        company_fit_reasoning: pick(MOCK_REASONINGS),
-        ko_criterion_triggered: ko,
-        team_proposal: isBid ? MOCK_TEAM.slice(0, randScore(1, 3)) : [],
-      };
+      const score = generateCoherentMockScore(file.name);
 
       mockTenderStore.push({
         id,
