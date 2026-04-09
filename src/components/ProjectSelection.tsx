@@ -232,10 +232,7 @@ export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps
         <h1 className="text-base font-semibold text-foreground">
           Tender Drafting Agent
         </h1>
-        <Button size="sm" className="gap-1.5" onClick={() => setShowUploadOverlay(true)}>
-          <Plus className="h-3.5 w-3.5" />
-          Upload Tender
-        </Button>
+        {/* intentionally empty — upload via dropzone below */}
       </header>
 
       {/* Content */}
