@@ -131,6 +131,7 @@ function formatUploadedAt(iso: string): string {
 interface ProjectSelectionProps {
   onSelect: (projectId: string) => void;
   onContinue: (projectId: string) => void;
+  onOpenWebhookDraft?: (draft: WebhookDraft) => void;
 }
 
 export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps) {
