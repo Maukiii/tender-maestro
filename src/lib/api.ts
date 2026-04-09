@@ -322,42 +322,72 @@ export async function draftProposal(
   onSection: (section: DraftedSection) => void,
   onSectionError?: (sectionId: string) => void,
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/tender/draft`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ documentId }),
-  });
-  if (!res.ok) throw new Error(`Draft request failed: ${res.status}`);
-  if (!res.body) throw new Error("No response body");
+  try {
+    const res = await fetch(`${API_BASE}/tender/draft`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ documentId }),
+    });
+    if (!res.ok) throw new Error(`Draft request failed: ${res.status}`);
+    if (!res.body) throw new Error("No response body");
 
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
-    for (const line of lines) {
-      if (!line.startsWith("data: ")) continue;
-      const event = JSON.parse(line.slice(6));
-      if (event.type === "status") {
-        onStatus(event.step, event.progress);
-      } else if (event.type === "section") {
-        onSection(event.section as DraftedSection);
-      } else if (event.type === "section_error") {
-        console.warn(`[draftProposal] section failed — ${event.section_id}: ${event.message}`);
-        onSectionError?.(event.section_id);
-      } else if (event.type === "done") {
-        return;
-      } else if (event.type === "error") {
-        throw new Error(event.message);
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const event = JSON.parse(line.slice(6));
+        if (event.type === "status") {
+          onStatus(event.step, event.progress);
+        } else if (event.type === "section") {
+          onSection(event.section as DraftedSection);
+        } else if (event.type === "section_error") {
+          console.warn(`[draftProposal] section failed — ${event.section_id}: ${event.message}`);
+          onSectionError?.(event.section_id);
+        } else if (event.type === "done") {
+          return;
+        } else if (event.type === "error") {
+          throw new Error(event.message);
+        }
       }
     }
+    throw new Error("Stream ended without done event");
+  } catch (e) {
+    if (isOffline(e)) {
+      // Offline mock: generate EU-style draft from tender scoring data
+      const { generateMockDraft } = await import("./mockDraft");
+      const tender = mockTenderStore.find((t) => t.id === documentId);
+      if (!tender) throw new Error(`Tender ${documentId} not found in mock store`);
+
+      const steps = [
+        "Extracting tender requirements…",
+        "Analysing company fit…",
+        "Mapping team competencies…",
+        "Generating proposal sections…",
+        "Applying EU formatting standards…",
+      ];
+      for (let i = 0; i < steps.length; i++) {
+        onStatus(steps[i], ((i + 1) / (steps.length + 1)) * 100);
+        await delay(600);
+      }
+
+      const sections = generateMockDraft(tender);
+      for (const section of sections) {
+        onSection(section);
+        await delay(200);
+      }
+      onStatus("Complete", 100);
+      return;
+    }
+    throw e;
   }
-  throw new Error("Stream ended without done event");
 }
 
 /** Save the current proposal draft to the backend. */
