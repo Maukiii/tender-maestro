@@ -156,7 +156,22 @@ export function ProjectSelection({ onSelect, onContinue, onOpenWebhookDraft }: P
     }
   }, []);
 
-  // Initial load
+  const handleFetchWebhook = useCallback(async () => {
+    setWebhookLoading(true);
+    setWebhookError(null);
+    try {
+      const drafts = await fetchWebhookDrafts();
+      setWebhookDrafts((prev) => {
+        const existingIds = new Set(prev.map((d) => d.id));
+        const newDrafts = drafts.filter((d) => !existingIds.has(d.id));
+        return newDrafts.length > 0 ? [...prev, ...newDrafts] : prev;
+      });
+    } catch (err) {
+      setWebhookError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setWebhookLoading(false);
+    }
+  }, []);
   useEffect(() => {
     refreshTenders();
     handleFetchWebhook();
