@@ -134,7 +134,7 @@ interface ProjectSelectionProps {
   onOpenWebhookDraft?: (draft: WebhookDraft) => void;
 }
 
-export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps) {
+export function ProjectSelection({ onSelect, onContinue, onOpenWebhookDraft }: ProjectSelectionProps) {
   const [showUploadOverlay, setShowUploadOverlay] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -142,6 +142,9 @@ export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps
   const [scoringIds, setScoringIds] = useState<Set<string>>(new Set());
   const [scoringErrors, setScoringErrors] = useState<Map<string, string>>(new Map());
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [webhookDrafts, setWebhookDrafts] = useState<WebhookDraft[]>([]);
+  const [webhookLoading, setWebhookLoading] = useState(false);
+  const [webhookError, setWebhookError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const refreshTenders = useCallback(async () => {
