@@ -90,6 +90,16 @@ export function IngestPhase({ sections, pendingSectionIds, onUpdateBlock, onText
                 <div className="space-y-1">
                   {section.blocks.map((block) => {
                     const isEditing = editingId === block.id;
+                    const isTeamBlock = section.id === "team";
+
+                    // Team section gets a structured table instead of markdown
+                    if (isTeamBlock) {
+                      return (
+                        <div key={block.id} className="px-0 py-2">
+                          <TeamTable block={block} onUpdate={onUpdateBlock} />
+                        </div>
+                      );
+                    }
 
                     return (
                       <div
@@ -129,15 +139,12 @@ export function IngestPhase({ sections, pendingSectionIds, onUpdateBlock, onText
                         ) : (
                           <div
                             onMouseDown={(e) => {
-                              // Store the mouse-down target so we can check on click
                               (e.currentTarget as HTMLElement).dataset.mouseDownTime = String(Date.now());
                             }}
-                            onClick={(e) => {
+                            onClick={() => {
                               const sel = window.getSelection();
                               const hasSelection = sel && sel.toString().trim().length > 0;
-                              if (!hasSelection) {
-                                setEditingId(block.id);
-                              }
+                              if (!hasSelection) setEditingId(block.id);
                             }}
                             onMouseUp={() => handleMouseUp(block.title, block.id)}
                             className="prose prose-sm max-w-none text-foreground
