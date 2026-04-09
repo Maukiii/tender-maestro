@@ -164,7 +164,7 @@ export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps
 
   const handleFile = useCallback(async (file: File) => {
     setUploading(true);
-    setShowUploadOverlay(false);
+    
     try {
       await uploadTenderDocument(file);
       await refreshTenders();
