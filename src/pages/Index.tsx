@@ -7,7 +7,7 @@ import { ProjectSelection } from "@/components/ProjectSelection";
 import { ProcessingPhase } from "@/components/ProcessingPhase";
 import type { ProposalSection } from "@/lib/proposalData";
 import { SECTION_TEMPLATES, getTemplateById } from "@/lib/sectionTemplates";
-import { draftProposal, saveProposal, loadProposal, type DraftedSection, type WebhookDraft } from "@/lib/api";
+import { draftProposal, saveProposal, loadProposal, type DraftedSection } from "@/lib/api";
 import { ArrowLeft, FileText, Check, Loader2 } from "lucide-react";
 
 type View = "projects" | "drafting" | "editor";
@@ -220,24 +220,11 @@ export const Index = () => {
     }
   }, [handleSelectTender]);
 
-  const handleOpenWebhookDraft = useCallback((draft: WebhookDraft) => {
-    setCurrentDocumentId(draft.id);
-    setSections([{
-      id: "webhook-draft",
-      label: draft.title,
-      icon: FileText,
-      blocks: [{ id: genId("block"), title: draft.title, markdown: draft.markdown }],
-    }]);
-    setPendingSectionIds(new Set());
-    setView("editor");
-  }, []);
-
   if (view === "projects") {
     return (
       <ProjectSelection
         onSelect={handleSelectTender}
         onContinue={handleContinueProposal}
-        onOpenWebhookDraft={handleOpenWebhookDraft}
       />
     );
   }
