@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { ProposalSection } from "@/lib/proposalData";
 import { SECTION_TEMPLATES } from "@/lib/sectionTemplates";
+import { TeamBlock } from "@/components/TeamBlock";
 
 interface IngestPhaseProps {
   sections: ProposalSection[];
