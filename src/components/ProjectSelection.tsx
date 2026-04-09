@@ -436,6 +436,84 @@ export function ProjectSelection({ onSelect, onContinue, onOpenWebhookDraft }: P
               })}
             </div>
           )}
+
+          {/* Webhook Drafts */}
+          <div className="space-y-3 pt-6 border-t border-border">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Webhook className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-bold text-foreground tracking-tight">
+                  Incoming Drafts
+                </h2>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="gap-1.5"
+                onClick={handleFetchWebhook}
+                disabled={webhookLoading}
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${webhookLoading ? "animate-spin" : ""}`} />
+                Refresh
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Drafts received from the n8n automation pipeline.
+            </p>
+
+            {webhookError && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/5 border border-destructive/20">
+                <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
+                <p className="text-xs text-destructive truncate">{webhookError}</p>
+              </div>
+            )}
+
+            {webhookDrafts.length === 0 && !webhookLoading && !webhookError && (
+              <p className="text-sm text-muted-foreground text-center py-6">
+                No drafts received yet — trigger your n8n workflow to send one.
+              </p>
+            )}
+
+            {webhookLoading && webhookDrafts.length === 0 && (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+              </div>
+            )}
+
+            {webhookDrafts.map((draft) => (
+              <div
+                key={draft.id}
+                className="rounded-xl border border-border bg-card overflow-hidden transition-shadow hover:shadow-md"
+              >
+                <button
+                  type="button"
+                  onClick={() => onOpenWebhookDraft?.(draft)}
+                  className="w-full flex items-center gap-4 p-5 text-left cursor-pointer hover:bg-accent/30 transition-colors"
+                >
+                  <div className="p-2.5 rounded-lg bg-primary/10 shrink-0">
+                    <Webhook className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <h3 className="text-sm font-semibold text-foreground truncate">
+                      {draft.title}
+                    </h3>
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      <span>{formatUploadedAt(draft.receivedAt)}</span>
+                      <span>·</span>
+                      <span className="truncate max-w-[300px]">
+                        {draft.markdown.slice(0, 80)}…
+                      </span>
+                    </div>
+                  </div>
+                  <div className="shrink-0">
+                    <FileEdit className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </button>
+              </div>
+            ))}
+          </div>
+
         </div>
       </div>
 
