@@ -232,17 +232,17 @@ export const Index = () => {
   if (view === "drafting") {
     return (
       <div className="flex min-h-screen w-full flex-col bg-background">
-        <header className="h-14 flex items-center gap-4 px-8 border-b border-primary/20 bg-primary shrink-0">
+        <header className="h-14 flex items-center gap-4 px-8 border-b border-border bg-card shrink-0">
           <button
             type="button"
             onClick={() => setView("projects")}
-            className="flex items-center gap-1.5 text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             Projects
           </button>
-          <div className="h-5 w-px bg-primary-foreground/20" />
-          <h1 className="text-base font-semibold text-primary-foreground">Generating Proposal…</h1>
+          <div className="h-5 w-px bg-border" />
+          <h1 className="text-base font-semibold text-foreground">Generating Proposal…</h1>
         </header>
         {draftingError ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-6 px-8">
@@ -277,17 +277,17 @@ export const Index = () => {
       />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
-        <header className="h-14 flex items-center gap-4 px-8 border-b border-primary/20 bg-primary shrink-0">
+        <header className="h-14 flex items-center gap-4 px-8 border-b border-border bg-card shrink-0">
           <button
             type="button"
             onClick={() => setView("projects")}
-            className="flex items-center gap-1.5 text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             Projects
           </button>
-          <div className="h-5 w-px bg-primary-foreground/20" />
-          <h1 className="text-base font-semibold text-primary-foreground">
+          <div className="h-5 w-px bg-border" />
+          <h1 className="text-base font-semibold text-foreground">
             Block View
           </h1>
           <div className="flex-1" />

@@ -14,10 +14,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["'Playfair Display'", "Georgia", "serif"],
-        heading: ["'Montserrat'", "system-ui", "sans-serif"],
-        body: ["'Inter'", "system-ui", "sans-serif"],
-        sans: ["'Inter'", "system-ui", "sans-serif"],
+        display: ["'Inter'", "system-ui", "-apple-system", "sans-serif"],
+        heading: ["'Inter'", "system-ui", "-apple-system", "sans-serif"],
+        body: ["'Inter'", "system-ui", "-apple-system", "sans-serif"],
+        sans: ["'Inter'", "system-ui", "-apple-system", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -56,6 +56,10 @@ export default {
         success: {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",

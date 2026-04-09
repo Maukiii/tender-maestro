@@ -6,15 +6,15 @@ import { listTenders, uploadTenderDocument, type UploadedTender, type TenderScor
 // ── Score display helpers ─────────────────────────────────────────────────────
 
 function getScoreColor(score: number): string {
-  if (score >= 75) return "text-emerald-500";
-  if (score >= 50) return "text-amber-500";
-  return "text-red-400";
+  if (score >= 75) return "text-success";
+  if (score >= 50) return "text-warning";
+  return "text-destructive";
 }
 
 function getScoreBg(score: number): string {
-  if (score >= 75) return "bg-emerald-500/10 border-emerald-500/20";
-  if (score >= 50) return "bg-amber-500/10 border-amber-500/20";
-  return "bg-red-400/10 border-red-400/20";
+  if (score >= 75) return "bg-success/10 border-success/20";
+  if (score >= 50) return "bg-warning/10 border-warning/20";
+  return "bg-destructive/10 border-destructive/20";
 }
 
 function ScoreRing({ score, label }: { score: number; label: string }) {
@@ -50,8 +50,8 @@ function DecisionBadge({ decision }: { decision: TenderScore["decision"] }) {
   return (
     <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
       isBid
-        ? "text-emerald-600 bg-emerald-500/10 border-emerald-500/20"
-        : "text-red-500 bg-red-500/10 border-red-500/20"
+        ? "text-success bg-success/10 border-success/20"
+        : "text-destructive bg-destructive/10 border-destructive/20"
     }`}>
       {decision}
     </span>
@@ -63,9 +63,9 @@ function ScoreExplanation({ score }: { score: TenderScore }) {
     <div className="mt-3 pt-3 border-t border-border space-y-3 text-left">
       {/* KO criterion */}
       {score.ko_criterion_triggered && (
-        <div className="flex items-start gap-2 p-2.5 rounded-lg bg-red-500/5 border border-red-500/15">
-          <AlertTriangle className="h-3.5 w-3.5 text-red-500 mt-0.5 shrink-0" />
-          <p className="text-xs text-red-500">
+        <div className="flex items-start gap-2 p-2.5 rounded-lg bg-destructive/5 border border-destructive/15">
+          <AlertTriangle className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" />
+          <p className="text-xs text-destructive">
             <span className="font-semibold">K.O.: </span>
             {score.ko_criterion_triggered}
           </p>
@@ -206,8 +206,8 @@ export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="h-14 flex items-center justify-between px-8 border-b border-primary/20 bg-primary shrink-0">
-        <h1 className="text-base font-semibold text-primary-foreground font-heading">
+      <header className="h-14 flex items-center justify-between px-8 border-b border-border bg-card shrink-0">
+        <h1 className="text-base font-semibold text-foreground font-heading">
           Tender EvaluAgent
         </h1>
         {/* intentionally empty — upload via dropzone below */}
@@ -296,8 +296,8 @@ export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps
                           <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
                         </div>
                       ) : scoringError ? (
-                        <div className="p-2.5 rounded-lg bg-red-500/10 shrink-0">
-                          <AlertTriangle className="h-5 w-5 text-red-500" />
+                        <div className="p-2.5 rounded-lg bg-destructive/10 shrink-0">
+                          <AlertTriangle className="h-5 w-5 text-destructive" />
                         </div>
                       ) : score ? (
                         <div className="flex items-center gap-3 shrink-0">
@@ -321,7 +321,7 @@ export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps
                             <span className="text-[10px] text-muted-foreground italic">Analysing…</span>
                           )}
                           {scoringError && (
-                            <span className="text-[10px] text-red-500 italic">Scoring failed</span>
+                            <span className="text-[10px] text-destructive italic">Scoring failed</span>
                           )}
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -338,7 +338,7 @@ export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps
                           {scoringError && (
                             <>
                               <span>·</span>
-                              <span className="text-red-500 truncate max-w-[200px]" title={scoringError}>
+                              <span className="text-destructive truncate max-w-[200px]" title={scoringError}>
                                 {scoringError}
                               </span>
                             </>
