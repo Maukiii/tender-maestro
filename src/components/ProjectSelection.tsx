@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { ChevronDown, ChevronUp, Clock, Plus, Target, Upload, X, Loader2, AlertTriangle, FileEdit, RotateCcw, Webhook, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, Plus, Target, Upload, X, Loader2, AlertTriangle, FileEdit, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { listTenders, uploadTenderDocument, scoreTender, fetchWebhookDrafts, type UploadedTender, type TenderScore, type WebhookDraft } from "@/lib/api";
+import { listTenders, uploadTenderDocument, scoreTender, type UploadedTender, type TenderScore } from "@/lib/api";
 
 // ── Score display helpers ─────────────────────────────────────────────────────
 
