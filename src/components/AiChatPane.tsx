@@ -39,28 +39,43 @@ export function AiChatPane({ selection, onClearSelection, onApplyToBlock }: AiCh
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // ── Demo mode: contextual fake responses ──────────────────────────────
+  const DEMO_MODE = true;
+
+  const pickDemoResponse = (userText: string, ctx: SelectionContext | null): string => {
+    const q = userText.toLowerCase();
+
+    if (ctx?.sectionLabel?.toLowerCase().includes("methodology") || q.includes("methodol")) {
+      return "I've refined the methodology section to better align with the DORA requirements outlined in the tender. The evidence classification framework now explicitly references Article 29 DORA and includes the three-tier provider typology (Cloud Infrastructure, Payment Technology, Core Banking Software) with precision targets of ≥97%. I also strengthened the language around concentration risk analysis to mirror EBA's oversight mandate.";
+    }
+    if (ctx?.sectionLabel?.toLowerCase().includes("team") || q.includes("team")) {
+      return "Based on the EBA tender requirements, I'd recommend leading with Dr. Anna Becker as Project Director — her 12 years in financial regulation and prior EBA engagement give us the strongest compliance narrative. Marcus Weber covers the data methodology angle well, and Sofia Chen's background in ICT supply-chain mapping directly addresses the CTPP identification workstream.";
+    }
+    if (ctx?.sectionLabel?.toLowerCase().includes("price") || q.includes("price") || q.includes("budget")) {
+      return "I've recalculated the pricing based on the current team composition. The total comes to **€287,400** across 3 senior consultants and 1 junior analyst over the 10-month delivery period. This sits comfortably within the EBA's estimated budget ceiling of €350,000 and leaves a 6% contingency margin for travel to the Paris headquarters.";
+    }
+    if (q.includes("executive") || q.includes("summary")) {
+      return "Done — I've tightened the executive summary to lead with our unique value proposition: the 6,400+ verified ICT provider dataset and our proprietary evidence-classification methodology. The revised version now opens with the DORA regulatory context before positioning Meridian's capabilities, which should score higher on the 'Understanding of Objectives' criterion (weighted at 30%).";
+    }
+    if (q.includes("shorten") || q.includes("concise") || q.includes("shorter")) {
+      return "Shortened. I removed redundant qualifiers and consolidated the three introductory paragraphs into one. The section now reads more decisively — important for EU evaluators who typically review 15–20 proposals per lot. Word count reduced from 340 to 185 without losing any substantive content.";
+    }
+    if (q.includes("compliance") || q.includes("legal") || q.includes("regulation")) {
+      return "I've cross-referenced the proposal against the key DORA provisions (Articles 28–44) and the EBA's selection criteria. Two gaps flagged: (1) we should explicitly mention our ISO 27001 certification in the Quality Assurance section, and (2) the reference to 'financial sector ICT providers' should use the official DORA terminology 'third-party ICT service providers' consistently throughout.";
+    }
+    if (q.includes("improve") || q.includes("rewrite") || q.includes("better")) {
+      return "Improved. I restructured the paragraph to follow the Problem → Approach → Evidence pattern that scores well in EU technical evaluations. I also added a concrete data point (800,000+ ICT providers in the EU27 seed universe) to demonstrate the scale of our identification methodology, directly addressing the tender's emphasis on empirical rigour.";
+    }
+    // Default
+    return "Done — I've updated the section based on the EBA tender specifications and aligned the language with DORA's regulatory framework. The changes strengthen our positioning against the award criteria, particularly on technical methodology (40% weight) and team competence (30% weight). Let me know if you'd like me to adjust the tone or add more specific references.";
+  };
+
   const handleSend = async () => {
     const text = input.trim();
     if (!text || isStreaming) return;
 
     setInput("");
 
-    // Snapshot history before adding the new user message
-    const history: ApiChatMessage[] = messages.map((m) => ({
-      role: m.role,
-      content: m.content,
-    }));
-
-    // blockId is frontend-only — strip it before sending to the API
-    const context: ApiContext | undefined = selection
-      ? {
-          text: selection.text,
-          blockTitle: selection.blockTitle || undefined,
-          sectionLabel: selection.sectionLabel,
-        }
-      : undefined;
-
-    // Snapshot the current selection so the assistant message knows what to apply to
     const contextSnapshot = selection ? { ...selection } : null;
 
     setMessages((prev) => [
@@ -75,22 +90,42 @@ export function AiChatPane({ selection, onClearSelection, onApplyToBlock }: AiCh
     ]);
     setIsStreaming(true);
 
-    try {
-      for await (const chunk of streamChat(text, context, history)) {
+    if (DEMO_MODE) {
+      const demoResponse = pickDemoResponse(text, selection);
+      for (const char of demoResponse) {
+        await new Promise((r) => setTimeout(r, 12 + Math.random() * 18));
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === assistantId ? { ...m, content: m.content + chunk } : m
+            m.id === assistantId ? { ...m, content: m.content + char } : m
           )
         );
       }
-    } catch (err) {
-      console.error("Chat stream error:", err);
-    } finally {
-      setMessages((prev) =>
-        prev.map((m) => (m.id === assistantId ? { ...m, streaming: false } : m))
-      );
-      setIsStreaming(false);
+    } else {
+      const history: ApiChatMessage[] = messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+      const context: ApiContext | undefined = selection
+        ? { text: selection.text, blockTitle: selection.blockTitle || undefined, sectionLabel: selection.sectionLabel }
+        : undefined;
+
+      try {
+        for await (const chunk of streamChat(text, context, history)) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantId ? { ...m, content: m.content + chunk } : m
+            )
+          );
+        }
+      } catch (err) {
+        console.error("Chat stream error:", err);
+      }
     }
+
+    setMessages((prev) =>
+      prev.map((m) => (m.id === assistantId ? { ...m, streaming: false } : m))
+    );
+    setIsStreaming(false);
   };
 
   const handleApply = (msg: ChatMessage) => {
