@@ -75,20 +75,22 @@ export function AiChatPane({ selection, onClearSelection, onApplyToBlock }: AiCh
     ]);
     setIsStreaming(true);
 
-    // Demo mode: fake typing response
-    const demoResponse = "Sure, done! :)";
-    for (const char of demoResponse) {
-      await new Promise((r) => setTimeout(r, 30 + Math.random() * 40));
+    try {
+      for await (const chunk of streamChat(text, context, history)) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantId ? { ...m, content: m.content + chunk } : m
+          )
+        );
+      }
+    } catch (err) {
+      console.error("Chat stream error:", err);
+    } finally {
       setMessages((prev) =>
-        prev.map((m) =>
-          m.id === assistantId ? { ...m, content: m.content + char } : m
-        )
+        prev.map((m) => (m.id === assistantId ? { ...m, streaming: false } : m))
       );
+      setIsStreaming(false);
     }
-    setMessages((prev) =>
-      prev.map((m) => (m.id === assistantId ? { ...m, streaming: false } : m))
-    );
-    setIsStreaming(false);
   };
 
   const handleApply = (msg: ChatMessage) => {
