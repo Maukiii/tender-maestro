@@ -1,0 +1,1031 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Below you will the tender information. Through the data table tool, you can access all our company data (stored in a single row). Your task is to evalute how much this tender actually fits to our company, so that we can estimate wether proposing is actually worth it. Create the report in a markdown format. Start with a short summary where everything is stated at a glance, then explain, but keep it overall short (1 page max.)\n\n---\n\nWeiter Informationen zum Bewertungsprozess: \nDu agierst als Regulatory Compliance & Governance Agent für die Meridian Intelligence GmbH.\nDeine Aufgabe ist es, eingehende Ausschreibungsunterlagen (Sample Tenders) sowie den von internen Agenten erzeugten Angebots‑Draft systematisch darauf zu analysieren, ob dieser vollständig vergabe‑, regulatorik‑, datenschutz‑ und methodikkonform ist.\nDu triffst keine juristischen Bewertungen im Sinne von Rechtsberatung, sondern prüfst die formale, inhaltliche und operative Konformität des Angebots mit:\nden expliziten Vorgaben der Ausschreibung,\neinschlägigem EU‑Recht,\nsowie den internen, verbindlichen Methodik‑ und Qualitätsstandards von Meridian Intelligence (insb. WebMap).\nDein Ziel ist es, Risiken vor Einreichung sichtbar zu machen, nicht sie zu optimieren oder zu verdecken.\nDEIN WISSENSSTAND (CONTEXT DATA)\nDu darfst ausschließlich auf Basis der folgenden, als verbindlich geltenden Fakten agieren:\n[UNTERNEHMEN: MERIDIAN INTELLIGENCE GMBH]\nFokus: Systematisches Mapping und Monitoring fragmentierter EU‑Märkte mittels OSINT‑basierter, NLP‑gestützter Verfahren\nMethodik: Proprietäre WebMap‑Pipeline (evidence‑first, fünfstufige Architektur)\nKeine primäre Datenerhebung (keine Umfragen, keine Vor‑Ort‑Audits)\nDSGVO‑konforme Verarbeitung öffentlich zugänglicher Informationen\nISO‑zertifizierte Qualitäts‑ und Governance‑Prozesse\n25 abgeschlossene EU‑Projekte (u. a. DG CNECT, JRC, ENISA, EBA)\n[INTERNE METHODIK & QUALITÄT]\nWebMap Methodology (Seed Universe, Deduplication, Web Crawling, Evidence Classification, Verification & Profiling)\nEvidence‑first‑Prinzip (keine Klassifikation ohne verifizierbare Evidenz)\nDefinierte Hard‑Evidence‑Typen und explizit ausgeschlossene Generic Signals\n3‑Tier‑Confidence‑Framework inkl. Quarantäne‑ und Review‑Prozess\nVerpflichtende Change‑Logs, Versionierung, Dokumentation, Reproduzierbarkeit\n[AUSSCHREIBUNGSKONTEXT]\nEU‑Ausschreibung (z. B. DG CNECT)\nAnforderungen an Transparenz, Reproduzierbarkeit, Monitoring‑Cadence\nKlare Abgrenzung zwischen Analyse, Klassifikation und regulatorischer Durchsetzung\nAusschluss von Tätigkeiten wie Konformitätsbewertung oder rechtlicher Compliance‑Feststellung\nEVALUIERUNGS‑PROZESS\nSCHRITT 1: REGULATORISCHE K.O.-PRÜFUNG\nWenn einer der folgenden Punkte zutrifft → COMPLIANCE FAIL:\nDas Angebot sagt Leistungen zu, die außerhalb des Mandats liegen\n(z. B. Konformitätsbewertung einzelner KI‑Systeme, rechtliche Compliance‑Opinions).\nMethodische Aussagen widersprechen nachweislich der WebMap‑Methodik.\nDatenschutz‑ oder Datenquellen‑Darstellungen sind nicht DSGVO‑konform oder unklar.\nTender‑Vorgaben werden strukturell oder inhaltlich missachtet.\nSCHRITT 2: COMPLIANCE‑SCORING\nBewerte den Angebots‑Draft entlang folgender Dimensionen:\nTender‑Compliance\nEinhaltung aller formalen, zeitlichen und inhaltlichen Ausschreibungsvorgaben.\nMethodik‑Konformität (WebMap)\nAlle methodischen Claims sind durch interne Dokumente gedeckt.\nRegulatorische Abgrenzung\nKlare Trennung zwischen datenbasierter Analyse und normativer/regulatorischer Bewertung.\nData Governance & DSGVO\nDatenminimierung, Zweckbindung, Umgang mit personenbezogenen Open‑Source‑Daten.\nTransparenz & Reproduzierbarkeit\nNachvollziehbarkeit aller Schritte, keine Black‑Box‑Formulierungen.\nDisclosure‑ und Vertraulichkeitsrisiken\nKeine unzulässige Offenlegung interner oder vertraulicher Details.\nSCHRITT 3: CLAIM‑AUDIT\nFür jede wesentliche Aussage im Draft (z. B. Präzisionsraten, Update‑Frequenzen, SLAs, Coverage‑Zusagen):\nPrüfe, ob die Aussage direkt durch Tender oder WebMap gedeckt ist.\nWenn nicht: klassifiziere als RED / AMBER Risk.\nSchlage eine sichere Alternativformulierung vor, ohne neue Fakten zu erfinden.\n\n---\n\nTENDER: \n{{ $json.text }}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        96,
+        0
+      ],
+      "id": "8c076932-1729-459e-be74-ed9e57d3fd63",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-3-haiku-20240307",
+          "mode": "list",
+          "cachedResultName": "claude-3-haiku-20240307"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Prompt', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropicTool",
+      "typeVersion": 1,
+      "position": [
+        368,
+        224
+      ],
+      "id": "6f152af5-fbf0-44ee-86f6-e96c624fd6bf",
+      "name": "Message a model in Anthropic",
+      "credentials": {
+        "anthropicApi": {
+          "id": "YrCPXfTVuRewFYYh",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-opus-4-6",
+          "mode": "list",
+          "cachedResultName": "Claude Opus 4.6"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        16,
+        224
+      ],
+      "id": "f12851d8-09e4-431f-825c-ed9f57900636",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "YrCPXfTVuRewFYYh",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1VzpEmdFEzrQ2gG0XkSRguzNABz2RHg_E",
+          "mode": "list",
+          "cachedResultName": "sample_tender1_for_building.pdf",
+          "cachedResultUrl": "https://drive.google.com/file/d/1VzpEmdFEzrQ2gG0XkSRguzNABz2RHg_E/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -272,
+        0
+      ],
+      "id": "6a83b237-c1d8-4fc2-b5dc-28cda6d60571",
+      "name": "Download tender",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "wXYzFRoTgAJkVyoI",
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "EKlchbKry27Pzw3B",
+          "mode": "list",
+          "cachedResultName": "all company data",
+          "cachedResultUrl": "/projects/trIgtKwPq6q0lIwm/datatables/EKlchbKry27Pzw3B"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        224
+      ],
+      "id": "f7633a15-da74-4e7f-96c5-e928237c0659",
+      "name": "Get row(s) in Data table"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        0
+      ],
+      "id": "a0830d32-6332-4e1a-b06f-d531fd700dc6",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -96,
+        0
+      ],
+      "id": "4eb8c8e3-cd3e-4b40-83d2-0d3471fcf9e2",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "claude-sonnet-4-20250514",
+          "mode": "list",
+          "cachedResultName": "claude-sonnet-4-20250514"
+        },
+        "text": "This is tender. Generate a short but mostly complete summary of this tender pdf, which will then serve as the input for further AI processing.",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        512
+      ],
+      "id": "12abc9ca-fe6a-42fb-a10c-1b5e496d9d34",
+      "name": "Analyze document",
+      "credentials": {
+        "anthropicApi": {
+          "id": "YrCPXfTVuRewFYYh",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "EKlchbKry27Pzw3B",
+          "mode": "list",
+          "cachedResultName": "all company data",
+          "cachedResultUrl": "/projects/trIgtKwPq6q0lIwm/datatables/EKlchbKry27Pzw3B"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        512,
+        608
+      ],
+      "id": "9c9062ed-b756-479a-a507-5b190f6f047b",
+      "name": "Get row(s) in Data table1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=System Prompt: Proposal Assembler\nYou are a formatting and aggregation agent. Your sole task is to combine pre-written proposal sections into a single, well-structured Markdown document.\nResponsibilities\nInput\nYou will receive multiple proposal sections.\nEach section consists of:\nA section title\nA corresponding pre-written text body\nThe text content is already finalized. Do NOT modify, improve, summarize, or reinterpret it.\nOutput Requirements\nProduce a single Markdown (.md) document\nFor each section:\nAdd the section title as a Markdown heading using ##\nPlace the corresponding text directly below the heading\nPreserve the exact wording of all provided content\nFormatting Rules\nMaintain original paragraphs, lists, and tables exactly as provided\nAdd a single blank line:\nAfter each heading\nBetween sections\nDo not introduce additional commentary, transitions, or summaries\nDo not reorder sections\nStrict Constraints\nDo NOT generate new content\nDo NOT edit tone, grammar, or structure\nDo NOT add explanations or metadata\nDo NOT include a title page unless explicitly provided in the input\nOutput Only\nReturn only the final Markdown document\nNo explanations, no notes, no preamble\nGoal\nProduce a clean, correctly formatted, client-ready Markdown document by assembling the provided sections without altering their content.\n\n\nSection 1: Executive Summary\n{{ $json.executive_summary[0] }}\n\nSection 2: Understanding of the Assignment\n\n\nSection 3: Methodology\n{{ $('methodology').item.json.content[0].text }}\n\nSection 4: Work Plan\n{{ $('workplan1').item.json.content[0].text }}\n\nSection 5: Team\n{{ $('team').item.json.content[0].text }}\n\nSection 6: Price Summary\n{{ $('price summary').item.json.content[0].text }}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1136,
+        1376
+      ],
+      "id": "9b18b9f0-c653-404a-989c-bdad7445bf5c",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "EKlchbKry27Pzw3B",
+          "mode": "list",
+          "cachedResultName": "all company data",
+          "cachedResultUrl": "/projects/trIgtKwPq6q0lIwm/datatables/EKlchbKry27Pzw3B"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        944
+      ],
+      "id": "361a6c35-2397-4e28-a15d-97f681d23c95",
+      "name": "Get row(s) in Data table2"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-opus-4-6",
+          "mode": "list",
+          "cachedResultName": "claude-opus-4-6"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Rolle: Senior Bid Manager für Meridian Intelligence GmbH.Aufgabe: Erstelle ausschließlich den Abschnitt \"1. Understanding of the Assignment\" für eine EU-Ausschreibung basierend auf dem Draft-Input.Strikte Struktur (Meridian-Stil):Kontext: Verknüpfung der Aufgabe mit dem regulatorischen Rahmen (z. B. DORA, NIS2, Data Act).Die Herausforderung (\"The Challenge\"): Identifikation des Kernproblems – meist das \"Population Problem\" (Unternehmen sind in Standard-Datenbanken/NACE-Codes schwer zu finden oder identifizieren sich nicht selbst als Zielgruppe).Der Lösungsansatz: Warum der evidenzbasierte Ansatz von Meridian (Web-Signale, Job-Postings, Beschaffungsdaten) genau dieses Problem löst.Vorgaben:Output-Format: Rein in Markdown. Beginne direkt mit ## 1. Understanding of the Assignment.Modularität: Kein Einleitungstext, kein \"Hier ist der Teil\". Nahtlos integrierbar.Tonalität: Analytisch, problemorientiert und fachlich fundiert.\n\nInformation about the tender:\n{{ $json.content[0].text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        384,
+        768
+      ],
+      "id": "200f67c3-7ec1-4bc8-ac49-73aebf083a3f",
+      "name": "understand of the assignment",
+      "credentials": {
+        "anthropicApi": {
+          "id": "YrCPXfTVuRewFYYh",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "EKlchbKry27Pzw3B",
+          "mode": "list",
+          "cachedResultName": "all company data",
+          "cachedResultUrl": "/projects/trIgtKwPq6q0lIwm/datatables/EKlchbKry27Pzw3B"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        1312
+      ],
+      "id": "e392f545-87e3-4553-9185-3a90968b2aa9",
+      "name": "Get row(s) in Data table3"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-opus-4-6",
+          "mode": "list",
+          "cachedResultName": "claude-opus-4-6"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Rolle: Senior Bid Manager für Meridian Intelligence GmbH.Aufgabe: Erstelle ausschließlich die Executive Summary für eine EU-Ausschreibung basierend auf dem Draft-Input.Striktes Format (Meridian-Stil):Absatz 1 (Das Versprechen): \"Meridian Intelligence GmbH proposes...\" – Direkter Bezug auf die Ausschreibungsziele und den regulatorischen Kontext (analog zu ).Absatz 2 (Methodik-Kern): Kurze Zusammenfassung des evidenzbasierten Ansatzes (z. B. Web-Data, NLP, Supply Chain Mapping) (analog zu ).Absatz 3 (Das Resultat): Konkrete Deliverables (z. B. Datensätze, Analysen) und Timelines (analog zu ).Vorgaben:Output-Format: Rein in Markdown. Beginne direkt mit ## Executive Summary.Modularität: Keine Einleitung, kein \"Hier ist die Zusammenfassung\". Der Text muss nahtlos in ein größeres Dokument eingefügt werden können.Sprache: Hochprofessionell, sachlich, \"Meridian-Tonalität\".\n\nTender Information:\n{{ $json.content[0].text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        368,
+        432
+      ],
+      "id": "8e32d49c-7295-4a34-8bdf-6ce4af800136",
+      "name": "executive sumary",
+      "credentials": {
+        "anthropicApi": {
+          "id": "YrCPXfTVuRewFYYh",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-opus-4-6",
+          "mode": "list",
+          "cachedResultName": "claude-opus-4-6"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Rolle: Senior Bid Manager für Meridian Intelligence GmbH.Aufgabe: Erstelle ausschließlich den Abschnitt \"2. Methodology\" für eine EU-Ausschreibung basierend auf dem Draft-Input.Strikte Struktur (Meridian-Stil):2.1 Identification & Seed Universe: Beschreibe den Prozess der Identifizierung (z.B. NACE-Filter, Meridian Web Index, Quell-Tiering).2.2 Evidence Classification: Erstelle eine Tabelle basierend auf folgendem Struktur-Schema:Schema: EVIDENCE TYPE ||||| WEIGHT ||||| EXAMPLE--- ||||| --- ||||| ---[Beweistyp aus Draft] ||||| [High/Medium/Low] ||||| [Konkretes Beispiel]2.3 Analytical Framework: Erläutere die Analyse-Logik (z.B. Concentration Analysis, Risk Scoring oder Supply Chain Mapping).Vorgaben: * Formatierung: Wandle das obige |||||-Schema in eine saubere Markdown-Tabelle um.Präzision: Nutze Fachbegriffe wie \"entity resolution\", \"false-positive rate <3%\" und \"seed universe\".Modularität: Beginne direkt mit ## 2. Methodology. Keine Einleitung.Daten-JSON: Gib am Ende des Abschnitts die Tabellendaten zusätzlich in einem kompakten JSON-Block aus.\n\nInformation about the tender:\n{{ $json.content[0].text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        384,
+        1120
+      ],
+      "id": "db993157-e3a8-4ef1-8ea8-1481efdd11d3",
+      "name": "methodology",
+      "credentials": {
+        "anthropicApi": {
+          "id": "YrCPXfTVuRewFYYh",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-opus-4-6",
+          "mode": "list",
+          "cachedResultName": "Claude Opus 4.6"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        1072,
+        1648
+      ],
+      "id": "63fe3951-cdc7-4a89-a8df-8a0fdb8eb24a",
+      "name": "Anthropic Chat Model1",
+      "credentials": {
+        "anthropicApi": {
+          "id": "YrCPXfTVuRewFYYh",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "EKlchbKry27Pzw3B",
+          "mode": "list",
+          "cachedResultName": "all company data",
+          "cachedResultUrl": "/projects/trIgtKwPq6q0lIwm/datatables/EKlchbKry27Pzw3B"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        1680
+      ],
+      "id": "823ef838-3feb-4274-a2aa-dc4a0a825e16",
+      "name": "Get row(s) in Data table5"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-opus-4-6",
+          "mode": "list",
+          "cachedResultName": "claude-opus-4-6"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Rolle: Du bist ein Senior Resource Manager und Experte für öffentliches Ausschreibungswesen (Tenders). Deine Aufgabe ist es, auf Basis von Mitarbeiter-CVs und einer Projektbeschreibung (Tender Case) das ideale Team zusammenzustellen und die Arbeitstage (Personentage) sinnvoll zu verteilen.\n\nInput:\n\nCVs (JSON): Eine Liste von Mitarbeiterprofilen mit Skills, Erfahrung und Werdegang.\n\nTender Case (JSON): Die Anforderungen des Projekts, inklusive technischer Schwerpunkte, Laufzeit und ggf. geschätztem Gesamtaufwand.\n\nAnweisungen:\n\nAnalysiere den Tender Case: Welche Rollen werden benötigt? (z.B. Project Director, Technical Lead, Data Scientist, etc.).\n\nMatchmaking: Ordne jedem Mitarbeiter basierend auf seinen Skills im CV die am besten passende Rolle zu.\n\nAufwandschätzung: Verteile die Arbeitstage (Days allocated) realistisch. Beachte dabei:\n\nStrategische Rollen (Director/Lead) steuern eher, während technische Rollen (Data Engineer/Scientist) das \"Heavy Lifting\" übernehmen.\n\nDie Gesamtsumme der Tage muss zur Komplexität des Tenders passen.\n\nAusgabe: Erstelle ausschließlich eine Markdown-Tabelle mit der Besetzung.\n\nAusgabeformat (Markdown Tabelle):\n| Name | Role | Days allocated |\n| :--- | :--- | :--- |\n| [Name der Person] | [Rollenname — Fokus der Tätigkeit] | [Anzahl] days |\n\nRegeln:\n\nAntworte nur mit der Tabelle.\n\nDie Rolle muss kurz beschreiben, was die Person im Projekt konkret tut (z.B. \"Technical Lead — data pipeline and delivery\").\n\nNutze für Thomas Vogel die Informationen aus seinem Profil (Senior Data Engineer, Web Intelligence, NLP, Meridian Intelligence).\n\nInformation about the tender:\n{{ $json.content[0].text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        384,
+        1488
+      ],
+      "id": "937838c7-07d7-4498-9967-77f704dc1112",
+      "name": "team",
+      "credentials": {
+        "anthropicApi": {
+          "id": "YrCPXfTVuRewFYYh",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "EKlchbKry27Pzw3B",
+          "mode": "list",
+          "cachedResultName": "all company data",
+          "cachedResultUrl": "/projects/trIgtKwPq6q0lIwm/datatables/EKlchbKry27Pzw3B"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        544,
+        2048
+      ],
+      "id": "84c4ae23-4a66-4fdb-8578-f638d1b27596",
+      "name": "Get row(s) in Data table6"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-opus-4-6",
+          "mode": "list",
+          "cachedResultName": "claude-opus-4-6"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Rolle: Du bist ein Senior Project Manager und Experte für öffentliches Ausschreibungswesen (Tenders). Deine Aufgabe ist es, auf Basis einer Projektbeschreibung (Tender Case) einen strukturierten Arbeitsplan (Work Plan) zu erstellen und die Phasen zeitlich sinnvoll zu ordnen.\n\nInput:\n\nTender Case (JSON): Die Anforderungen des Projekts, inklusive technischer Meilensteine, Deliverables und der Gesamtlaufzeit von 24 Monaten.\n\nAnweisungen:\n\nAnalysiere den Tender Case: Welche Projektphasen werden benötigt? (z.B. Setup, Baseline, Monitoring).\n\nStrukturierung: Ordne jeder Phase die spezifischen Aktivitäten und Deliverables (Activities) zu.\n\nZeitplanung: Erstelle eine realistische Timeline für jede Phase, um den Fortschritt über die zwei Jahre abzubilden. Beachte dabei:\n\nDie Initialisierungsphase ist kurz (Monat 1–2).\n\nDie Baseline-Erstellung nimmt das erste Halbjahr nach dem Setup ein.\n\nDas Monitoring teilt sich in jährliche Zyklen auf.\n\nAusgabe: Erstelle ausschließlich eine Markdown-Tabelle mit dem Arbeitsplan.\n\nAusgabeformat (Markdown Tabelle):\n| Phase | Activities | Timeline |\n| :--- | :--- | :--- |\n| [Name der Phase] | [Liste der Tätigkeiten und Deliverables] | [Zeitraum in Monaten] |\n\nRegeln:\n\nAntworte nur mit der Tabelle.\n\nDie Aktivitäten müssen präzise technische Begriffe enthalten (z.B. \"API architecture design\", \"entity universe construction\").\n\nNutze für die inhaltliche Gestaltung die Phasen 0 (Setup), 1 (Baseline), 2 (Monitoring Year 1) und 3 (Monitoring Year 2).\n\nInformation about the tender:\n{{ $json.content[0].text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        400,
+        1856
+      ],
+      "id": "0528617d-19eb-4128-af3b-27343d0fd144",
+      "name": "workplan1",
+      "credentials": {
+        "anthropicApi": {
+          "id": "YrCPXfTVuRewFYYh",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "EKlchbKry27Pzw3B",
+          "mode": "list",
+          "cachedResultName": "all company data",
+          "cachedResultUrl": "/projects/trIgtKwPq6q0lIwm/datatables/EKlchbKry27Pzw3B"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        2416
+      ],
+      "id": "1c02c3cb-b9dc-454d-92f1-30a1a9a85434",
+      "name": "Get row(s) in Data table7"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-opus-4-6",
+          "mode": "list",
+          "cachedResultName": "claude-opus-4-6"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Rolle: Du bist ein Senior Project Manager und Experte für öffentliches Ausschreibungswesen (Tenders). Deine Aufgabe ist es, auf Basis einer Projektbeschreibung (Tender Case) einen strukturierten Arbeitsplan (Work Plan) zu erstellen und die Phasen zeitlich sinnvoll zu ordnen.\n\nInput:\n\nTender Case (JSON): Die Anforderungen des Projekts, inklusive technischer Meilensteine, Deliverables und der Gesamtlaufzeit von 24 Monaten.\n\nAnweisungen:\n\nAnalysiere den Tender Case: Welche Projektphasen werden benötigt? (z.B. Setup, Baseline, Monitoring).\n\nStrukturierung: Ordne jeder Phase die spezifischen Aktivitäten und Deliverables (Activities) zu.\n\nZeitplanung: Erstelle eine realistische Timeline für jede Phase, um den Fortschritt über die zwei Jahre abzubilden. Beachte dabei:\n\nDie Initialisierungsphase ist kurz (Monat 1–2).\n\nDie Baseline-Erstellung nimmt das erste Halbjahr nach dem Setup ein.\n\nDas Monitoring teilt sich in jährliche Zyklen auf.\n\nAusgabe: Erstelle ausschließlich eine Markdown-Tabelle mit dem Arbeitsplan.\n\nAusgabeformat (Markdown Tabelle):\n| Phase | Activities | Timeline |\n| :--- | :--- | :--- |\n| [Name der Phase] | [Liste der Tätigkeiten und Deliverables] | [Zeitraum in Monaten] |\n\nRegeln:\n\nAntworte nur mit der Tabelle.\n\nDie Aktivitäten müssen präzise technische Begriffe enthalten (z.B. \"API architecture design\", \"entity universe construction\").\n\nNutze für die inhaltliche Gestaltung die Phasen 0 (Setup), 1 (Baseline), 2 (Monitoring Year 1) und 3 (Monitoring Year 2).\n\nInformation about the tender:\n{{ $json.content[0].text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        384,
+        2224
+      ],
+      "id": "521910c6-0fb8-461d-82a5-4f5ae95812fb",
+      "name": "price summary",
+      "credentials": {
+        "anthropicApi": {
+          "id": "YrCPXfTVuRewFYYh",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "rtf",
+        "binaryPropertyName": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1472,
+        1424
+      ],
+      "id": "e6715cec-f9de-478e-9508-ce190851b718",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "content[0].text",
+              "renameField": true,
+              "outputFieldName": "executive_summary"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        688,
+        432
+      ],
+      "id": "448125c2-2f0f-4820-8a6f-f4315c2d37c8",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "={{ $json.content[0].text }}",
+              "renameField": true,
+              "outputFieldName": "understanding_of_the_assignment"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        688,
+        768
+      ],
+      "id": "735e90b8-c0d8-4c99-9a7a-95f1e8be2cba",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "={{ $json.content[0].text }}",
+              "renameField": true,
+              "outputFieldName": "methodology"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        704,
+        1120
+      ],
+      "id": "3994ec90-bc8b-42d9-81de-c5b030b5a1e8",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "={{ $json.content[0].text }}",
+              "renameField": true,
+              "outputFieldName": "team"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        688,
+        1488
+      ],
+      "id": "0fa7e0ec-38fd-40fb-a9b2-cd8b1a9c0e2c",
+      "name": "Aggregate3"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "={{ $json.content[0].text }}",
+              "renameField": true,
+              "outputFieldName": "workplan"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        720,
+        1856
+      ],
+      "id": "24e8ad28-ae71-4117-b6ee-cf263c32aec6",
+      "name": "Aggregate4"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "={{ $json.content[0].text }}",
+              "renameField": true,
+              "outputFieldName": "price_summary"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        736,
+        2224
+      ],
+      "id": "b4348a22-0cdc-43f9-ae5c-f6e16123538b",
+      "name": "Aggregate5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Message a model in Anthropic": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download tender": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Analyze document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in Data table": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Download tender",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze document": {
+      "main": [
+        [
+          {
+            "node": "executive sumary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "understand of the assignment",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "methodology",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "team",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "workplan1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "price summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in Data table1": {
+      "ai_tool": [
+        [
+          {
+            "node": "executive sumary",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in Data table2": {
+      "ai_tool": [
+        [
+          {
+            "node": "understand of the assignment",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "understand of the assignment": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in Data table3": {
+      "ai_tool": [
+        [
+          {
+            "node": "methodology",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "executive sumary": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "methodology": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in Data table5": {
+      "ai_tool": [
+        [
+          {
+            "node": "team",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "team": {
+      "main": [
+        [
+          {
+            "node": "Aggregate3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in Data table6": {
+      "ai_tool": [
+        [
+          {
+            "node": "workplan1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in Data table7": {
+      "ai_tool": [
+        [
+          {
+            "node": "price summary",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "workplan1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "price summary": {
+      "main": [
+        [
+          {
+            "node": "Aggregate5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate4": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate5": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4f6b8d16-ffde-4323-af40-3daaefaaf6e5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ce91e512ada434d65354d28f573e65c77c265d86e2db3f7fbec198e0a9bd616f"
+  },
+  "id": "dQtYN4OEcPgoPAOm",
+  "tags": []
+}
