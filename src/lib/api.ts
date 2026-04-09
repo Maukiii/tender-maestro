@@ -67,40 +67,6 @@ export interface ChatMessage {
   content: string;
 }
 
-// ─── Knowledge Base ───────────────────────────────────────────────────
-
-/** Fetch knowledge base stats */
-export async function fetchKnowledgeStats(): Promise<KnowledgeStats> {
-  try {
-    const res = await fetch(`${API_BASE}/knowledge/stats`);
-    if (!res.ok) throw new Error(`${res.status}`);
-    return res.json();
-  } catch (e) {
-    if (isOffline(e)) {
-      await delay(300);
-      return { pastTenders: 45, teamCVs: 12, policyDocs: 8, templateLibrary: 23 };
-    }
-    throw e;
-  }
-}
-
-/** Upload a knowledge document to the vector store */
-export async function uploadKnowledgeDocument(file: File): Promise<{ success: boolean }> {
-  try {
-    const form = new FormData();
-    form.append("file", file);
-    const res = await fetch(`${API_BASE}/knowledge/upload`, { method: "POST", body: form });
-    if (!res.ok) throw new Error(`${res.status}`);
-    return res.json();
-  } catch (e) {
-    if (isOffline(e)) {
-      await delay(2000);
-      return { success: true };
-    }
-    throw e;
-  }
-}
-
 // ─── Mock tender store (used when backend is offline) ─────────────────
 
 let mockTenderCounter = 3;
