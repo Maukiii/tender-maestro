@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { ProposalSection } from "@/lib/proposalData";
 import { SECTION_TEMPLATES } from "@/lib/sectionTemplates";
+import { TeamBlock } from "@/components/TeamBlock";
 
 interface IngestPhaseProps {
   sections: ProposalSection[];
@@ -89,6 +90,20 @@ export function IngestPhase({ sections, pendingSectionIds, onUpdateBlock, onText
                 <div className="space-y-1">
                   {section.blocks.map((block) => {
                     const isEditing = editingId === block.id;
+                    const isTeamBlock = section.id === "team";
+
+                    // Team section uses a structured UI instead of markdown editing
+                    if (isTeamBlock) {
+                      return (
+                        <div key={block.id} className="rounded-lg px-4 py-2">
+                          <TeamBlock
+                            blockId={block.id}
+                            markdown={block.markdown}
+                            onUpdate={onUpdateBlock}
+                          />
+                        </div>
+                      );
+                    }
 
                     return (
                       <div
@@ -128,10 +143,9 @@ export function IngestPhase({ sections, pendingSectionIds, onUpdateBlock, onText
                         ) : (
                           <div
                             onMouseDown={(e) => {
-                              // Store the mouse-down target so we can check on click
                               (e.currentTarget as HTMLElement).dataset.mouseDownTime = String(Date.now());
                             }}
-                            onClick={(e) => {
+                            onClick={() => {
                               const sel = window.getSelection();
                               const hasSelection = sel && sel.toString().trim().length > 0;
                               if (!hasSelection) {
