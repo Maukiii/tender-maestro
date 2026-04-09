@@ -300,6 +300,8 @@ export const Index = () => {
         scrollContainer={scrollContainer}
         onAddSection={handleAddSection}
         onAddBlock={handleAddBlock}
+        onAddTeamMember={handleAddTeamMember}
+        assignedTeamNames={assignedTeamNames}
       />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
