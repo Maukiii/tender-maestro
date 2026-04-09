@@ -514,6 +514,52 @@ export async function* streamChat(
   }
 }
 
+// ─── Webhook Drafts (n8n) ─────────────────────────────────────────────
+
+export interface WebhookDraft {
+  id: string;
+  title: string;
+  markdown: string;
+  receivedAt: string;
+}
+
+/**
+ * Fetch draft(s) from the n8n webhook endpoint.
+ * The webhook returns markdown content — either a string or an object with a markdown field.
+ */
+export async function fetchWebhookDrafts(): Promise<WebhookDraft[]> {
+  const res = await fetch(N8N_WEBHOOK_URL);
+  if (!res.ok) throw new Error(`Webhook returned ${res.status}`);
+
+  const data = await res.json();
+
+  // Normalise: the webhook may return a single object, an array, or raw markdown string
+  const items: Record<string, unknown>[] = Array.isArray(data) ? data : [data];
+
+  return items.map((item, i) => {
+    const markdown =
+      typeof item === "string"
+        ? item
+        : typeof item.markdown === "string"
+          ? item.markdown
+          : typeof item.content === "string"
+            ? item.content
+            : JSON.stringify(item, null, 2);
+
+    const title =
+      typeof item.title === "string"
+        ? item.title
+        : `Webhook Draft ${i + 1}`;
+
+    const id =
+      typeof item.id === "string"
+        ? item.id
+        : `webhook-${Date.now()}-${i}`;
+
+    return { id, title, markdown, receivedAt: new Date().toISOString() };
+  });
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────
 
 function delay(ms: number): Promise<void> {
