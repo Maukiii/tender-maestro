@@ -206,8 +206,8 @@ export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="h-14 flex items-center justify-between px-8 border-b border-border bg-card shrink-0">
-        <h1 className="text-base font-semibold text-foreground">
+      <header className="h-14 flex items-center justify-between px-8 border-b border-primary/20 bg-primary shrink-0">
+        <h1 className="text-base font-semibold text-primary-foreground font-heading">
           Tender Drafting Agent
         </h1>
         {/* intentionally empty — upload via dropzone below */}
