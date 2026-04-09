@@ -14,7 +14,7 @@ interface TeamTableProps {
 }
 
 /** Parse a markdown table into structured team members */
-function parseMembers(md: string): TeamMember[] {
+export function parseMembers(md: string): TeamMember[] {
   const rows = md
     .split("\n")
     .filter((l) => l.startsWith("|") && !l.includes("---"));
