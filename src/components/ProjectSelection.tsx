@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { ChevronDown, ChevronUp, Clock, Target, Upload, X, Loader2, AlertTriangle, FileEdit, RotateCcw } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, Target, Upload, X, Loader2, AlertTriangle, FileEdit, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { listTenders, uploadTenderDocument, type UploadedTender, type TenderScore } from "@/lib/api";
 
@@ -361,27 +361,38 @@ export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps
                     {isExpanded && score && (
                       <div className="px-5 pb-5">
                         <ScoreExplanation score={score} />
-                        <div className="mt-4 pt-3 border-t border-border flex items-center justify-end gap-2">
-                          {tender.hasProposal && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="gap-1.5 text-muted-foreground"
-                              onClick={() => onSelect(tender.id)}
-                              title="Discard saved draft and re-run all agents"
-                            >
-                              <RotateCcw className="h-3.5 w-3.5" />
-                              Re-Draft
-                            </Button>
-                          )}
+                        <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
                           <Button
                             size="sm"
-                            className="gap-1.5"
-                            onClick={() => tender.hasProposal ? onContinue(tender.id) : onSelect(tender.id)}
+                            variant="ghost"
+                            className="gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => setTenders((prev) => prev.filter((t) => t.id !== tender.id))}
                           >
-                            <FileEdit className="h-3.5 w-3.5" />
-                            {tender.hasProposal ? "Continue Editing" : "Draft Proposal"}
+                            <Trash2 className="h-3.5 w-3.5" />
+                            Discard
                           </Button>
+                          <div className="flex items-center gap-2">
+                            {tender.hasProposal && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="gap-1.5 text-muted-foreground"
+                                onClick={() => onSelect(tender.id)}
+                                title="Discard saved draft and re-run all agents"
+                              >
+                                <RotateCcw className="h-3.5 w-3.5" />
+                                Re-Draft
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              className="gap-1.5"
+                              onClick={() => tender.hasProposal ? onContinue(tender.id) : onSelect(tender.id)}
+                            >
+                              <FileEdit className="h-3.5 w-3.5" />
+                              {tender.hasProposal ? "Continue Editing" : "Draft Proposal"}
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     )}
