@@ -18,6 +18,19 @@ interface IngestPhaseProps {
 export function IngestPhase({ sections, pendingSectionIds, onUpdateBlock, onTextSelect, onSectionReference, onScrollContainerReady }: IngestPhaseProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const editingRef = useRef<HTMLDivElement | null>(null);
+
+  // Close editor when clicking outside the active block
+  useEffect(() => {
+    if (!editingId) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (editingRef.current && !editingRef.current.contains(e.target as Node)) {
+        setEditingId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [editingId]);
 
   const handleMouseUp = useCallback(
     (blockTitle: string, blockId: string) => {
