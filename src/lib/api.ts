@@ -416,11 +416,51 @@ export async function uploadTenderDocument(file: File): Promise<{ documentId: st
     if (isOffline(e)) {
       await delay(800);
       const id = `mock-tender-${++mockTenderCounter}`;
+      // Generate random scores immediately so the card appears fully scored
+      const randScore = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+      const companyFit = randScore(25, 95);
+      const teamFit = randScore(25, 95);
+      const overall = Math.round((companyFit + teamFit) / 2);
+      const isBid = overall >= 55;
+
+      const MOCK_REASONINGS = [
+        "Strong alignment with our cloud infrastructure and digital transformation capabilities.",
+        "Moderate fit — we cover most technical requirements but lack some domain certifications.",
+        "The tender requires niche regulatory compliance we don't currently hold.",
+        "Excellent match with our data analytics and AI/ML delivery track record.",
+        "Partial overlap with our service portfolio; partnering with a specialist is recommended.",
+      ];
+      const MOCK_KOS = [
+        null,
+        null,
+        null,
+        "Requires security clearance level not held by current staff",
+        "Mandatory on-site presence in a region we don't cover",
+      ];
+      const MOCK_TEAM = [
+        { role: "Project Director", member_name: "Sarah Mitchell", total_score_percentage: randScore(60, 98), score_details: { hard_skills_reasoning: "Strong programme management", experience_reasoning: "Led 12 similar engagements", gap_analysis: "None" } },
+        { role: "Lead Architect", member_name: "James Chen", total_score_percentage: randScore(55, 92), score_details: { hard_skills_reasoning: "Deep cloud-native expertise", experience_reasoning: "Designed 3 comparable platforms", gap_analysis: "Limited SAP experience" } },
+        { role: "Senior Analyst", member_name: "Priya Sharma", total_score_percentage: randScore(50, 90), score_details: { hard_skills_reasoning: "Data analytics background", experience_reasoning: "5 advisory projects", gap_analysis: "No HIPAA audit experience" } },
+      ];
+
+      const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+      const ko = pick(MOCK_KOS);
+
+      const score: TenderScore = {
+        decision: isBid ? "BID" : "NO-BID",
+        company_fit_score: companyFit,
+        team_fit_score: teamFit,
+        overall_score: overall,
+        company_fit_reasoning: pick(MOCK_REASONINGS),
+        ko_criterion_triggered: ko,
+        team_proposal: isBid ? MOCK_TEAM.slice(0, randScore(1, 3)) : [],
+      };
+
       mockTenderStore.push({
         id,
         filename: file.name,
         uploadedAt: new Date().toISOString(),
-        score: null,
+        score,
         hasProposal: false,
       });
       return { documentId: id };
