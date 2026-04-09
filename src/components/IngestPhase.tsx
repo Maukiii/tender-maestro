@@ -92,6 +92,7 @@ export function IngestPhase({ sections, pendingSectionIds, onUpdateBlock, onText
 
                     return (
                       <div
+                        ref={isEditing ? editingRef : undefined}
                         key={block.id}
                         className={`rounded-lg transition-all ${
                           isEditing
