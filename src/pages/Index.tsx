@@ -9,6 +9,8 @@ import { EditorFab } from "@/components/EditorFab";
 import type { ProposalSection } from "@/lib/proposalData";
 import { SECTION_TEMPLATES, getTemplateById } from "@/lib/sectionTemplates";
 import { draftProposal, saveProposal, loadProposal, type DraftedSection } from "@/lib/api";
+import { type TeamCandidate } from "@/lib/teamCandidates";
+import { parseMembers } from "@/components/TeamTable";
 import { ArrowLeft, FileText, Check, Loader2 } from "lucide-react";
 
 type View = "projects" | "drafting" | "editor";
@@ -96,6 +98,29 @@ export const Index = () => {
         : [{ id: genId("block"), title: "Untitled Block", markdown: "" }],
     };
     setSections((prev) => [...prev, newSection]);
+  }, []);
+
+  // Derive assigned team member names from the team section markdown
+  const assignedTeamNames = sections
+    .filter((s) => s.id === "team")
+    .flatMap((s) => s.blocks.flatMap((b) => parseMembers(b.markdown).map((m) => m.name)));
+
+  const handleAddTeamMember = useCallback((candidate: TeamCandidate) => {
+    setSections((prev) => {
+      const teamSection = prev.find((s) => s.id === "team");
+      if (!teamSection || teamSection.blocks.length === 0) return prev;
+      const block = teamSection.blocks[0];
+      const members = parseMembers(block.markdown);
+      members.push({ name: candidate.name, role: candidate.role, days: candidate.defaultDays });
+      const header = "| Name | Role | Days Allocated |\n|------|------|----------------|";
+      const rows = members.map((m) => `| ${m.name} | ${m.role} | ${m.days} |`);
+      const newMd = `${header}\n${rows.join("\n")}`;
+      return prev.map((s) =>
+        s.id === "team"
+          ? { ...s, blocks: s.blocks.map((b, i) => (i === 0 ? { ...b, markdown: newMd } : b)) }
+          : s,
+      );
+    });
   }, []);
 
   const handleApplyToBlock = useCallback((blockId: string, aiResponse: string, selectionText: string) => {
@@ -275,6 +300,8 @@ export const Index = () => {
         scrollContainer={scrollContainer}
         onAddSection={handleAddSection}
         onAddBlock={handleAddBlock}
+        onAddTeamMember={handleAddTeamMember}
+        assignedTeamNames={assignedTeamNames}
       />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
