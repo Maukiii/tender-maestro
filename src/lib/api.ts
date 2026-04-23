@@ -297,6 +297,29 @@ export async function loadProposal(documentId: string): Promise<{ sections: Save
   return res.json();
 }
 
+/** Score an uploaded tender against the company knowledge base. */
+export async function scoreTender(documentId: string): Promise<TenderScore> {
+  try {
+    const res = await fetch(`${API_BASE}/tender/score`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ documentId }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      throw new Error(body?.detail ?? `Score failed: ${res.status}`);
+    }
+    return res.json();
+  } catch (e) {
+    if (isOffline(e)) {
+      const tender = mockTenderStore.find((t) => t.id === documentId);
+      if (tender?.score) return tender.score;
+      throw new Error(`No mock score for ${documentId}`);
+    }
+    throw e;
+  }
+}
+
 /** Upload the tender PDF for analysis */
 export async function uploadTenderDocument(file: File): Promise<{ documentId: string }> {
   try {

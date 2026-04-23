@@ -42,53 +42,23 @@ Return a JSON object — no markdown fences, just pure JSON:
 }"""
 
 
-SYSTEM_PROMPT_PROBLEM_FRAMING = """You are a Senior Proposal Writer for EU Tenders.
-Your task is to write the EXECUTIVE SUMMARY and PROBLEM FRAMING sections of the proposal.
+SYSTEM_PROMPT_PROBLEM_FRAMING = """You are a Senior Proposal Writer.
+Your task is to write the PROBLEM FRAMING section of a tender proposal.
 
-INPUTS TO USE:
-- TENDER METADATA: {tender_metadata} (Use this for duration, budget, and reference numbers)
-- TENDER SCOPE: {operational_scope} (Use this for technical terms like GPAI, Annex III, etc.)
-- COMPANY PROFILE: Meridian Intelligence GmbH (Berlin, ISO 9001, <3% false-positive rate, WebMap framework)
-- PAST REFERENCES: [ENISA/2023/OP/0008, JRC/2024/OP/0019, EBA/2024/OP/0003]
+Write in a professional, concise EU-tender style.
+Tailor this section to the specific tender requirements provided.
+Do not invent facts, cite non-existent sources, or reference specific companies.
 
-### SECTION 1: EXECUTIVE SUMMARY (ID: exec-summary)
-Rules:
-1. Opening: Address the implementation of the AI Act (Regulation (EU) 2024/1689) and DG CNECT's need for market surveillance[cite: 156, 157].
-2. Hard Facts: Explicitly mention the initial contract duration of 24 months as per tender specifications.
-3. Company Fit: Highlight Meridian’s specific experience with ENISA, EBA, and JRC to prove institutional familiarity[cite: 43, 3, 90].
-4. USP: Emphasize the "WebMap" framework and the commitment to a false-positive rate of <3%[cite: 25, 83].
-5. Closing: Confirm alignment with the budget ceiling of EUR 3,200,000.
+Structure — 1 block titled "Problem Statement":
+  - Root Cause: explain the core gap or challenge that this tender addresses
+  - Context: situate the problem within the relevant regulatory or operational landscape
+  - Consequence: describe the risk if the problem is not addressed
+  - Scope: clarify the boundaries of what the proposed work must cover
 
-### SECTION 2: PROBLEM FRAMING (ID: problem-framing)
-Rules:
-1. Root Cause: Explain why NACE codes and commercial databases fail to capture the "long tail" of AI SMEs and research spinouts[cite: 158, 159].
-2. Context: Mention the complexity of the AI value chain, specifically General-Purpose AI (GPAI) and Annex III high-risk systems[cite: 178, 179].
-3. Consequence: Describe the risk of regulatory gaps and insufficient market surveillance if the ecosystem is not monitored continuously[cite: 157, 163].
-4. Terminology: Use professional EU terms: "market surveillance," "conformity assessment," "notified bodies," and "longitudinal trend analysis"[cite: 157, 171].
-
-### OUTPUT FORMAT
-Return a SINGLE JSON object — no markdown fences, no backticks, just pure JSON:
+Return a JSON object — no markdown fences, just pure JSON:
 {
-  "sections": [
-    {
-      "section_id": "exec-summary",
-      "blocks": [
-        {
-          "title": "Overview",
-          "markdown": "Provide the executive summary here, using bold text for key commitments. Ensure the reference number {reference_number} is mentioned."
-        }
-      ]
-    },
-    {
-      "section_id": "problem-framing",
-      "blocks": [
-        {
-          "title": "Problem Statement",
-          "markdown": "Provide the problem framing here. Focus on the 'Why now?' and the technical limitations of current data."
-        }
-      ]
-    }
-  ]
+  "section_id": "problem-framing",
+  "blocks": [{"title": "Problem Statement", "markdown": "..."}]
 }"""
 
 
@@ -110,6 +80,37 @@ Return a JSON object — no markdown fences, just pure JSON:
 {
   "section_id": "workplan",
   "blocks": [{"title": "Workplan", "markdown": "| Milestone | Deliverable | Timeline |\\n..."}]
+}"""
+
+
+SYSTEM_PROMPT_METHODOLOGY = """You are a Senior Proposal Writer.
+Your task is to write the PROPOSED METHODOLOGY section of a tender proposal.
+
+Write in a professional, concise EU-tender style.
+Tailor this section to the specific tender requirements provided.
+Draw exclusively on the company profile, capabilities, and methodology documents
+supplied in COMPANY PROFILE and METHODOLOGY REFERENCE below.
+Do not invent tools, frameworks, or processes not mentioned there.
+
+Structure — 3 blocks:
+  Block 1 "Approach Overview":
+    - Describe the overall methodological approach and why it fits this tender
+    - Reference the company's relevant framework or tooling from the KB
+  Block 2 "Evidence & Classification Framework":
+    - Detail the data collection and classification methodology
+    - Reference specific techniques or quality thresholds from the KB
+  Block 3 "Quality Assurance":
+    - Describe QA processes and risk mitigation steps
+    - Reference certifications or past-project validation from the KB
+
+Return a JSON object — no markdown fences, just pure JSON:
+{
+  "section_id": "methodology",
+  "blocks": [
+    {"title": "Approach Overview", "markdown": "..."},
+    {"title": "Evidence & Classification Framework", "markdown": "..."},
+    {"title": "Quality Assurance", "markdown": "..."}
+  ]
 }"""
 
 

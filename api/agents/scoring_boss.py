@@ -20,56 +20,49 @@ from services.ai import generate_text
 # are injected at runtime from the knowledge base — edit them in documents/kb/.
 
 SCORING_SYSTEM_PROMPT = """You are a Senior Bid Manager & Resource Allocation Expert.
-Your task is to analyse an incoming tender against a company knowledge base and decide
-whether the company should bid (BID / NO-BID), then propose the optimal team.
+Evaluate an incoming tender against a company knowledge base and return a bid/no-bid
+decision with numeric scores and a proposed team composition.
 
 You will receive:
   - TENDER DATA: structured extraction of the tender document
-  - COMPANY KNOWLEDGE BASE: company profile, certifications, past projects, team CVs
+  - COMPANY PROFILE: company capabilities, certifications, past projects
+  - TEAM CVs: team member profiles and experience
 
-Act ONLY on the facts provided in those two inputs. Do not invent capabilities or team
-members that are not mentioned in the knowledge base.
+Act ONLY on the facts provided in those inputs. Do not invent capabilities or team
+members not present in the knowledge base.
 
-### EVALUATION PROCESS
+Internally apply the following evaluation (do NOT output this reasoning, only the final JSON):
+  - K.O. CHECK: Immediately NO-BID if any of these apply: a required certification the
+    company does not hold; mandatory on-site fieldwork the company cannot perform; required
+    project languages not covered by any team member; min_turnover_required exceeds the
+    company's annual turnover; fewer than three qualifying reference projects.
+  - COMPANY FIT SCORE (0–100, 40% of decision): technical capabilities match (15%),
+    past project references/volume (15%), compliance & certifications (10%).
+  - TEAM MAPPING (0–100 per member, 60% of decision): use ONLY team members listed in
+    the CVs. Score each: Hard Skills (25%), Track Record (15%), Domain/Policy (10%),
+    Qualifications & Languages (10%). If weighted average < 70 → NO-BID.
+  - OVERALL SCORE: 0.4 × company_fit_score + 0.6 × team_fit_score.
 
-STEP 1 — K.O. CHECK (hard dealbreakers → immediate NO-BID if any applies)
-1. A required certification that the company does not hold.
-2. Required primary fieldwork / on-site surveys the company cannot perform.
-3. Required project languages not covered by any team member.
-4. Single-reference budget requirements that clearly exceed every team member's track record.
-5. Compare min_turnover_required (e.g., €500k) with the annual turnover listed in the Company Profile.
-  If the turnover is lower than that, mark it as NO-BID.
-6. Check whether the company has at least three reference projects that meet the content criteria 
-  (large-scale data collection AND EU policy support).
+Your response MUST be a single JSON object and nothing else.
+Do not include any explanation, preamble, markdown, or text outside the JSON.
+Your response must start with { and end with }.
 
-STEP 2 — COMPANY FIT SCORE  (40 % of final decision)
-Score 0–100 based on the knowledge base:
-  - Technical capabilities match   (15 %)
-  - Past project references/volume (15 %)
-  - Compliance & certifications    (10 %)
-
-STEP 3 — TEAM MAPPING & SCORE  (60 % of final decision)
-Using ONLY the team members listed in the knowledge base, select the best-fit team.
-Score each member 0–100: Hard Skills (25 %), Track Record (15 %), Domain/Policy (10 %), Qualifications & Languages (10 %).
-If the weighted average team score is below 70 → NO-BID.
-
-### OUTPUT FORMAT (STRICT JSON — no markdown fences, pure JSON string only)
 {
   "decision": "BID" or "NO-BID",
   "company_fit_score": <integer 0-100>,
-  "team_fit_score": <integer 0-100, weighted average of team member scores>,
-  "overall_score": <integer 0-100, 0.4 * company_fit_score + 0.6 * team_fit_score>,
-  "company_fit_reasoning": "Short justification of the company fit score",
-  "ko_criterion_triggered": "The triggered K.O. criterion if NO-BID, otherwise null",
+  "team_fit_score": <integer 0-100>,
+  "overall_score": <integer 0-100>,
+  "company_fit_reasoning": "One or two sentences justifying the company fit score",
+  "ko_criterion_triggered": "The triggered K.O. criterion, or null if BID",
   "team_proposal": [
     {
       "role": "Required role from tender",
-      "member_name": "Team member name from the knowledge base",
+      "member_name": "Exact name from the team CVs",
       "total_score_percentage": <integer 0-100>,
       "score_details": {
-        "hard_skills_reasoning": "Reasoning based on the member's skills",
-        "experience_reasoning": "Reasoning based on past projects / reference budgets",
-        "gap_analysis": "What the candidate lacks for 100%"
+        "hard_skills_reasoning": "Based on the member's technical skills",
+        "experience_reasoning": "Based on past projects and reference budgets",
+        "gap_analysis": "What the candidate lacks for a perfect score"
       }
     }
   ]
@@ -129,21 +122,41 @@ async def run_scoring_boss(tender_data: dict[str, Any], kb_profile: dict[str, An
     return _parse_json(raw)
 
 
-# ── Helper ────────────────────────────────────────────────────────────────────
+# ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _parse_json(raw: str) -> dict:
-    """Parse AI response as JSON, stripping accidental markdown fences."""
-    clean = raw.strip()
-    if clean.startswith("```"):
-        parts = clean.split("```")
-        inner = parts[1]
-        if inner.startswith("json"):
-            inner = inner[4:]
-        clean = inner.strip()
+    """
+    Parse AI response as JSON.
 
+    Strategy (most to least lenient):
+    1. Strip markdown fences, then try json.loads.
+    2. Find the first '{' and last '}' and try json.loads on that substring.
+    3. Raise RuntimeError with the first 400 chars of raw output for debugging.
+    """
+    clean = _strip_fence(raw)
     try:
         return json.loads(clean)
-    except json.JSONDecodeError as e:
-        raise RuntimeError(
-            f"scoring_boss returned invalid JSON: {e}\nRaw output (first 400 chars): {raw[:400]}"
-        ) from e
+    except json.JSONDecodeError:
+        pass
+
+    start = raw.find("{")
+    end = raw.rfind("}") + 1
+    if start != -1 and end > start:
+        try:
+            return json.loads(raw[start:end])
+        except json.JSONDecodeError:
+            pass
+
+    raise RuntimeError(
+        f"scoring_boss returned invalid JSON.\nRaw output (first 400 chars): {raw[:400]}"
+    )
+
+
+def _strip_fence(raw: str) -> str:
+    """Remove leading/trailing markdown code fences."""
+    lines = raw.strip().splitlines()
+    if lines and lines[0].startswith("```"):
+        lines = lines[1:]
+    if lines and lines[-1].strip() == "```":
+        lines = lines[:-1]
+    return "\n".join(lines).strip()

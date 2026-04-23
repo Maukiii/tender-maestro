@@ -41,45 +41,47 @@ The JSON must follow exactly the following hierarchy:
   },
   “operational_scope”: {
     “tasks”: [
-       { “task_id”: “”, “title”: “”, “detailed_description”: ‘’, “sub_tasks”: [] }
+       { “task_id”: “”, “title”: “”, “detailed_description”: “”, “sub_tasks”: [] }
     ],
     “technical_methodology_requirements”: []
   },
   “deliverables”: [
-    { “id”: “”, “title”: “”, “description”: “”, “delivery_month”: “”, ‘frequency’: “” }
+    { “id”: “”, “title”: “”, “description”: “”, “delivery_month”: “”, “frequency”: “” }
   ],
   “resource_requirements”: {
     “team_profiles”: [
-      { “role”: “”, ‘minimum_requirements_years_exp’: 0, “specific_expertise_required”: [] }
+      { “role”: “”, “minimum_requirements_years_exp”: 0, “specific_expertise_required”: [] }
     ],
     “subcontracting_rules”: “”
   },
   “compliance_and_selection”: {
-    “financial_economic_capacity”: { “min_turnover_required”: 0, ‘other_requirements’: “” },
-    “technical_professional_capacity”: { “reference_projects_required”: 0, ‘reference_details’: “” }
-    “required_reference_details_structure”: {"mandatory_fields": [
-      "contract_value_euro",
-      "contracting_authority_client",
-      "period_of_performance_start_end",
-      "description_of_deliverables",
-      "contact_details_for_verification"
-    ],
-    "content_proof_requirements": [
-      "comparable_contract_size_complexity",
-      "large_scale_data_collection_evidence",
-      "eu_digital_policy_experience"
-    ]}
+    “financial_economic_capacity”: { “min_turnover_required”: 0, “other_requirements”: “” },
+    “technical_professional_capacity”: { “reference_projects_required”: 0, “reference_details”: “” },
+    “required_reference_details_structure”: {
+      “mandatory_fields”: [
+        “contract_value_euro”,
+        “contracting_authority_client”,
+        “period_of_performance_start_end”,
+        “description_of_deliverables”,
+        “contact_details_for_verification”
+      ],
+      “content_proof_requirements”: [
+        “comparable_contract_size_complexity”,
+        “large_scale_data_collection_evidence”,
+        “eu_digital_policy_experience”
+      ]
+    }
   },
   “evaluation_logic”: {
     “quality_price_ratio”: “”,
     “technical_award_criteria”: [
-       { “criterion”: “”, “max_points”: 0, “weight”: “”, ‘detailed_evaluation_logic’: “” }
+       { “criterion”: “”, “max_points”: 0, “weight”: “”, “detailed_evaluation_logic”: “” }
     ],
     “price_weight”: “”
   },
   “submission_logistics”: {
     “required_documents”: [],
-    “page_limits”: { ‘technical_offer’: 0, “total_annexes”: 0 },
+    “page_limits”: { “technical_offer”: 0, “total_annexes”: 0 },
     “submission_platform”: “”
   }
 }
@@ -149,18 +151,38 @@ def _read_file(path: Path) -> str:
 
 
 def _parse_json(raw: str, agent: str) -> dict:
-    """Parse AI response as JSON, stripping accidental markdown fences."""
-    clean = raw.strip()
-    if clean.startswith("```"):
-        parts = clean.split("```")
-        inner = parts[1]
-        if inner.startswith("json"):
-            inner = inner[4:]
-        clean = inner.strip()
+    """
+    Parse AI response as JSON.
 
+    Strategy (most to least lenient):
+    1. Strip markdown fences, then try json.loads.
+    2. Find the first '{' and last '}' and try json.loads on that substring.
+    3. Raise RuntimeError with the first 400 chars of raw output for debugging.
+    """
+    clean = _strip_fence(raw)
     try:
         return json.loads(clean)
-    except json.JSONDecodeError as e:
-        raise RuntimeError(
-            f"{agent} returned invalid JSON: {e}\nRaw output (first 400 chars): {raw[:400]}"
-        ) from e
+    except json.JSONDecodeError:
+        pass
+
+    start = raw.find("{")
+    end = raw.rfind("}") + 1
+    if start != -1 and end > start:
+        try:
+            return json.loads(raw[start:end])
+        except json.JSONDecodeError:
+            pass
+
+    raise RuntimeError(
+        f"{agent} returned invalid JSON.\nRaw output (first 400 chars): {raw[:400]}"
+    )
+
+
+def _strip_fence(raw: str) -> str:
+    """Remove leading/trailing markdown code fences."""
+    lines = raw.strip().splitlines()
+    if lines and lines[0].startswith("```"):
+        lines = lines[1:]
+    if lines and lines[-1].strip() == "```":
+        lines = lines[:-1]
+    return "\n".join(lines).strip()

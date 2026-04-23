@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { ChevronDown, ChevronUp, Clock, Target, Upload, Loader2, AlertTriangle, FileEdit, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { listTenders, uploadTenderDocument, type UploadedTender, type TenderScore } from "@/lib/api";
+import { listTenders, uploadTenderDocument, scoreTender, type UploadedTender, type TenderScore } from "@/lib/api";
 
 // ── Score display helpers ─────────────────────────────────────────────────────
 
@@ -158,16 +158,36 @@ export function ProjectSelection({ onSelect, onContinue }: ProjectSelectionProps
   // Poll while any tender is being scored so the card updates automatically
   useEffect(() => {
     if (scoringIds.size === 0) return;
-    const id = setInterval(refreshTenders, 3000);
+    const id = setInterval(refreshTenders, 8000);
     return () => clearInterval(id);
   }, [scoringIds.size, refreshTenders]);
 
   const handleFile = useCallback(async (file: File) => {
     setUploading(true);
-    
     try {
-      await uploadTenderDocument(file);
+      const { documentId } = await uploadTenderDocument(file);
       await refreshTenders();
+      setScoringIds((prev) => new Set(prev).add(documentId));
+      scoreTender(documentId)
+        .then((score) => {
+          setTenders((prev) =>
+            prev.map((t) => (t.id === documentId ? { ...t, score } : t))
+          );
+        })
+        .catch((err: unknown) => {
+          setScoringErrors((prev) => {
+            const next = new Map(prev);
+            next.set(documentId, err instanceof Error ? err.message : String(err));
+            return next;
+          });
+        })
+        .finally(() => {
+          setScoringIds((prev) => {
+            const next = new Set(prev);
+            next.delete(documentId);
+            return next;
+          });
+        });
     } finally {
       setUploading(false);
     }

@@ -9,7 +9,11 @@ from fastapi.middleware.cors import CORSMiddleware
 # This works whether you start uvicorn from the project root or from api/.
 load_dotenv(Path(__file__).parent / ".env")
 
-from routers import chat, knowledge, tender
+# Install log queue handler before importing routers so all startup logs are captured.
+from services import log_queue
+log_queue.install()
+
+from routers import chat, knowledge, tender, logs
 
 app = FastAPI(
     title="Tender Maestro API",
@@ -36,6 +40,7 @@ app.add_middleware(
 app.include_router(knowledge.router, prefix="/knowledge", tags=["Knowledge Base"])
 app.include_router(tender.router, prefix="/tender", tags=["Tender"])
 app.include_router(chat.router, tags=["Chat"])
+app.include_router(logs.router, tags=["System"])
 
 
 # ── Health check ──────────────────────────────────────────────────────────────

@@ -1,9 +1,12 @@
 import asyncio
 import json
+import logging
 import uuid
 
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse
+
+logger = logging.getLogger(__name__)
 
 from agents.cost_agent import run_cost_agent
 from agents.kb_parser import load_kb_profile
@@ -32,6 +35,16 @@ from models.section_templates import get_template_by_id, get_template_by_label
 from services import ai, pdf
 
 router = APIRouter()
+
+
+def _safe_int(value: object, default: int = 0) -> int:
+    """Convert a value to int safely; returns default on None or parse failure."""
+    if value is None:
+        return default
+    try:
+        return int(float(str(value)))
+    except (ValueError, TypeError):
+        return default
 
 
 # ── Tender list ───────────────────────────────────────────────────────────────
@@ -72,6 +85,7 @@ async def score_tender(request: ScoreRequest):
     try:
         tender_data = await run_tender_extractor_agent(file_path)
     except Exception as e:
+        logger.error("Tender extraction failed for %s: %s", request.documentId, e)
         raise HTTPException(status_code=422, detail=f"Tender extraction failed: {e}")
 
     kb_profile = load_kb_profile()
@@ -79,22 +93,29 @@ async def score_tender(request: ScoreRequest):
     try:
         score_raw = await run_scoring_boss(tender_data, kb_profile)
     except Exception as e:
+        logger.error("Scoring failed for %s: %s", request.documentId, e)
         raise HTTPException(status_code=500, detail=f"Scoring failed: {e}")
 
     # Persist both extraction result (for /draft) and score
     pdf.save_tender_data(request.documentId, tender_data)
     pdf.save_score(request.documentId, score_raw)
 
-    return ScoreResult(
-        documentId=request.documentId,
-        decision=score_raw.get("decision", "NO-BID"),
-        company_fit_score=int(score_raw.get("company_fit_score", 0)),
-        team_fit_score=int(score_raw.get("team_fit_score", 0)),
-        overall_score=int(score_raw.get("overall_score", 0)),
-        company_fit_reasoning=score_raw.get("company_fit_reasoning", ""),
-        ko_criterion_triggered=score_raw.get("ko_criterion_triggered"),
-        team_proposal=score_raw.get("team_proposal", []),
-    )
+    try:
+        result = ScoreResult(
+            documentId=request.documentId,
+            decision=score_raw.get("decision", "NO-BID"),
+            company_fit_score=_safe_int(score_raw.get("company_fit_score")),
+            team_fit_score=_safe_int(score_raw.get("team_fit_score")),
+            overall_score=_safe_int(score_raw.get("overall_score")),
+            company_fit_reasoning=score_raw.get("company_fit_reasoning", ""),
+            ko_criterion_triggered=score_raw.get("ko_criterion_triggered"),
+            team_proposal=score_raw.get("team_proposal", []),
+        )
+    except Exception as e:
+        logger.error("ScoreResult construction failed for %s: %s — raw: %s", request.documentId, e, str(score_raw)[:400])
+        raise HTTPException(status_code=500, detail=f"Score result invalid: {e}")
+
+    return result
 
 
 # ── Draft (3-agent parallel proposal generation) ─────────────────────────────

@@ -66,7 +66,7 @@ async def _stream_anthropic(
         )
 
     model = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")
-    client = anthropic.AsyncAnthropic(api_key=api_key)
+    client = anthropic.AsyncAnthropic(api_key=api_key, timeout=120.0)
 
     kwargs: dict = dict(model=model, max_tokens=max_tokens, messages=messages)
     if system:
@@ -106,7 +106,7 @@ async def _stream_openai(
         )
 
     model = os.getenv("OPENAI_MODEL", "gpt-4o")
-    client = AsyncOpenAI(api_key=api_key)
+    client = AsyncOpenAI(api_key=api_key, timeout=120.0)
 
     all_messages: list[dict] = []
     if system:
