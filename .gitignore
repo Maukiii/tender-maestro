@@ -28,6 +28,7 @@ __pycache__
 *.pyc
 .venv/
 api/.venv/
+.env
 
 # Uploaded tender documents (user data, not code)
 documents/tenders/
