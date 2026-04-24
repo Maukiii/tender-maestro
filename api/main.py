@@ -54,3 +54,5 @@ async def health():
         "api_key_configured": bool(os.getenv(key_var)),
         "docs": "http://localhost:8000/docs",
     }
+
+#
